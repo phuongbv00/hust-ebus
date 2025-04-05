@@ -42,6 +42,18 @@ Activate venv
 uv sync
 ```
 
+### Database
+
+```shell
+docker compose -f docker-compose.db.yaml up -d
+```
+
+### MinIO
+
+```shell
+docker compose -f docker-compose.s3.yaml up -d
+```
+
 ### Spark Cluster
 
 ```shell

@@ -27,10 +27,23 @@ services:
       - spark-master
   spark-connect:
     image: bitnami/spark:3.5.5
-    command: [ "/bin/bash", "-c", "/opt/bitnami/spark/sbin/start-connect-server.sh --master spark://spark-master:7077 --packages org.apache.spark:spark-connect_2.12:3.5.5" ]
+    command:
+      - "/opt/bitnami/spark/sbin/start-connect-server.sh"
+      - "--master"
+      - "spark://spark-master:7077"
+      - "--packages"
+      - "org.apache.spark:spark-connect_2.12:3.5.5,org.postgresql:postgresql:42.7.5"
+      - "--conf"
+      - "spark.hadoop.fs.s3a.endpoint=http://minio:9000"
+      - "--conf"
+      - "spark.hadoop.fs.s3a.path.style.access=true"
+      - "--conf"
+      - "spark.hadoop.fs.s3a.connection.ssl.enabled=false"
     environment:
       - SPARK_MODE=driver
       - SPARK_MASTER_URL=spark://spark-master:7077
+      - AWS_ACCESS_KEY_ID=${S3_ACCESS_KEY?Variable not set}
+      - AWS_SECRET_ACCESS_KEY=${S3_SECRET_KEY?Variable not set}
     ports:
       - "15002:15002"
     depends_on:
