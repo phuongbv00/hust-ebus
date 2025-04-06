@@ -1,6 +1,7 @@
 services:
   spark-master:
-    image: bitnami/spark:3.5.5
+    image: my-spark:3.5.5
+    build: ./spark
     environment:
       - SPARK_MODE=master
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
@@ -12,7 +13,8 @@ services:
       - "8080:8080"
       - "7077:7077"
   spark-worker:
-    image: bitnami/spark:3.5.5
+    image: my-spark:3.5.5
+    build: ./spark
     environment:
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark-master:7077
@@ -26,13 +28,18 @@ services:
     depends_on:
       - spark-master
   spark-connect:
-    image: bitnami/spark:3.5.5
+    image: my-spark:3.5.5
+    build: ./spark
     command:
       - "/opt/bitnami/spark/sbin/start-connect-server.sh"
       - "--master"
       - "spark://spark-master:7077"
       - "--packages"
-      - "org.apache.spark:spark-connect_2.12:3.5.5,org.postgresql:postgresql:42.7.5"
+      - "org.apache.spark:spark-connect_2.12:3.5.5"
+      - "--driver-class-path"
+      - "postgresql-42.7.5.jar"
+      - "--jars"
+      - "postgresql-42.7.5.jar"
       - "--conf"
       - "spark.hadoop.fs.s3a.endpoint=http://minio:9000"
       - "--conf"
