@@ -1,14 +1,36 @@
 # HUST Bus Stop
 
-### Prerequisites
+## Prerequisites
 
 - Python 3.12
 - Docker
+
+## Setup
 
 ### Environment Variables
 
 1. Clone `.env` file base on `.env.example`
 2. Fill up `.env`
+
+### Database
+
+```shell
+docker compose -f docker-compose.db.yaml up -d
+```
+
+### MinIO
+
+```shell
+docker compose -f docker-compose.s3.yaml up -d
+```
+
+### Spark Cluster
+
+```shell
+docker compose -f docker-compose.spark.yaml up -d --scale spark-worker=3
+```
+
+## Development
 
 ### Virtual Environment
 
@@ -40,22 +62,4 @@ Activate venv
 
 ```shell
 uv sync
-```
-
-### Database
-
-```shell
-docker compose -f docker-compose.db.yaml up -d
-```
-
-### MinIO
-
-```shell
-docker compose -f docker-compose.s3.yaml up -d
-```
-
-### Spark Cluster
-
-```shell
-docker compose -f docker-compose.spark.yaml up -d --scale spark-worker=3
 ```
