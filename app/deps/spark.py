@@ -1,15 +1,31 @@
 import os
 
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession, DataFrame
 
 
 def get_spark_session():
     return (SparkSession.builder
-            .remote("sc://localhost")
+            .remote("sc://localhost")  # TODO
             .getOrCreate())
 
 
 JDBC_URL = f"jdbc:postgresql://{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
+DB_USER = os.getenv('DB_USER')
+DB_PASS = os.getenv('DB_PASS')
+DB_DRIVER = "org.postgresql.Driver"
+
+
+def spark_write_db(table: str, df: DataFrame, mode: str = "append"):
+    df.write.jdbc(
+        url=JDBC_URL,
+        table=table,
+        mode=mode,
+        properties={
+            "user": DB_USER,
+            "password": DB_PASS,
+            "driver": DB_DRIVER,
+        }
+    )
 
 
 def spark_read_db(query: str):
@@ -17,9 +33,9 @@ def spark_read_db(query: str):
     return spark.read \
         .format("jdbc") \
         .option("url", JDBC_URL) \
-        .option("user", os.getenv("DB_USER")) \
-        .option("password", os.getenv("DB_PASS")) \
-        .option("driver", "org.postgresql.Driver") \
+        .option("user", DB_USER) \
+        .option("password", DB_PASS) \
+        .option("driver", DB_DRIVER) \
         .option("query", query) \
         .load()
 
@@ -29,6 +45,6 @@ def spark_read_s3(key: str):
     bucket_name = os.getenv("S3_BUCKET")
     filepath = f"s3a://{bucket_name}/{key}"
     if key.endswith(".csv"):
-        return spark.read.csv(filepath)
+        return spark.read.csv(filepath, header=True)
     elif key.endswith(".json") or key.endswith(".geojson"):
         return spark.read.json(filepath)
