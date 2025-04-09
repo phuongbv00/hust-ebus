@@ -28,7 +28,7 @@ def _load_jobs_from_env() -> dict[str, type[Job]]:
         if not job_name:
             continue
 
-        env_var = f"BATCH_JOB_{job_name}_PATH"
+        env_var = f"BATCH_JOB_{job_name.upper()}_PATH"
         full_class_path = os.getenv(env_var)
 
         if not full_class_path:
