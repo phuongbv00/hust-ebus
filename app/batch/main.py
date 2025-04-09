@@ -38,7 +38,7 @@ def launch_job(name: str):
 
 
 @app.get("/job/{name}/executions")
-def launch_job(name: str):
+def get_job_executions(name: str):
     return [
         JobExecutionResponse.from_(execution)
         for execution in job_orchestrator.get_executions(name)
