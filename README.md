@@ -2,8 +2,9 @@
 
 ## Prerequisites
 
-- Python 3.12
-- Docker
+- [Python 3.12](https://www.python.org/)
+- [uv](https://docs.astral.sh/uv/)
+- [Docker](https://www.docker.com/)
 
 ## Setup
 
@@ -63,3 +64,30 @@ Activate venv
 ```shell
 uv sync
 ```
+
+### Run Application
+
+#### Setup PYTHONPATH
+
+- Option 1: IDE
+    - PyCharm:
+        - Right-click on folder `app` → Mark Directory as → Sources Root
+        - Right-click on folder `test` → Mark Directory as → Test Sources Root
+- Option 2: Terminal
+    - MacOS/Linux Terminal:
+      ```shell
+      export PYTHONPATH=app:test
+      ```
+    - Windows Powershell:
+      ```shell
+      $env:PYTHONPATH="app;test"
+      ```
+
+#### Run Batch Service
+
+- Option 1: PyCharm
+    - Right-click on `app/batch/main.py` → Run 'main'
+- Option 2: Terminal
+    ```shell
+    python app/batch/main.py
+    ```
