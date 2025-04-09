@@ -46,5 +46,5 @@ def spark_read_s3(key: str):
     filepath = f"s3a://{bucket_name}/{key}"
     if key.endswith(".csv"):
         return spark.read.csv(filepath, header=True)
-    elif key.endswith(".json") or key.endswith(".geojson"):
-        return spark.read.json(filepath)
+    else:
+        raise RuntimeError(f"Unsupported file type: {key}")
