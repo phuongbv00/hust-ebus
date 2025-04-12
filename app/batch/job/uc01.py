@@ -193,7 +193,7 @@ def find_bus_stops_df(spark: SparkSession, roads_df: DataFrame, cluster_centers:
     window = Window.partitionBy("cluster_id").orderBy("distance")
     return with_distance_df.withColumn("rn", row_number().over(window)) \
         .filter(col("rn") == 1) \
-        .select("cluster_id", "road_id", "latitude", "longitude", "distance") \
+        .select("cluster_id", "road_id", "latitude", "longitude") \
         .withColumnRenamed("cluster_id", "stop_id") \
         .withColumn("stop_id", col("stop_id") + 1)
 
@@ -225,4 +225,4 @@ class UC01Job(Job):
                 .join(students_df, on="__row_id") \
                 .drop("__row_id")
             assignments_df.show()
-            spark_write_db("bus_stop_student_assignments", assignments_df, "overwrite")
+            spark_write_db("assignments", assignments_df, "overwrite")

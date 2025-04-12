@@ -10,6 +10,7 @@ dependencies = [
     "fastapi>=0.115.12",
     "geopandas>=1.0.1",
     "matplotlib>=3.10.1",
+    "psycopg[binary]>=3.2.6",
     "pyspark[connect]>=3.5.5",
     "python-dotenv>=1.1.0",
     "scikit-learn>=1.6.1",
