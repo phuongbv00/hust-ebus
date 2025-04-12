@@ -31,7 +31,7 @@ function SetViewOnClick({coords}: { coords: { lat: number; lng: number } }) {
 }
 
 export default function Map() {
-    const [studentAddresses, setStudentAddresses] = useState<Assignment[]>([])
+    const [assignments, setAssignments] = useState<Assignment[]>([])
     const [busStops, setBusStops] = useState<BusStop[]>([])
     const [activePoint, setActivePoint] = useState<Point | null>(null)
     const [loading, setLoading] = useState(true)
@@ -40,26 +40,15 @@ export default function Map() {
 
     // Fetch points data from JSON files
     useEffect(() => {
-        async function fetchPointsData() {
+        async function fetchData() {
             const BASE_URL = "http://localhost:8002"
             try {
-                // Fetch student addresses
-                const studentAddressesResponse = await fetch(BASE_URL + "/assignments")
-                if (!studentAddressesResponse.ok) {
-                    throw new Error("Failed to fetch student addresses")
-                }
-                const studentAddressesData = await studentAddressesResponse.json()
-
-                // Fetch bus stops
-                const busStopsResponse = await fetch(BASE_URL + "/bus-stops")
-                if (!busStopsResponse.ok) {
-                    throw new Error("Failed to fetch bus stops")
-                }
-                const busStopsData = await busStopsResponse.json()
-
-                // Update state with fetched data (no mapping needed now)
-                setStudentAddresses(studentAddressesData)
-                setBusStops(busStopsData)
+                const rs = await Promise.all([
+                    fetch(BASE_URL + "/assignments").then(res => res.json()),
+                    fetch(BASE_URL + "/bus-stops").then(res => res.json()),
+                ])
+                setAssignments(rs[0])
+                setBusStops(rs[1])
                 setError(null)
             } catch (error) {
                 console.error("Error loading points data:", error)
@@ -69,7 +58,7 @@ export default function Map() {
             }
         }
 
-        fetchPointsData()
+        fetchData()
     }, [])
 
     // Function to center the map on a specific point
@@ -80,7 +69,9 @@ export default function Map() {
     // Function to render popup content for a point
     const renderPopupContent = (data: any) => (
         <div>
-            {JSON.stringify(data)}
+            {Object.entries(data).map(([k, v]) => (
+                <div key={k}>{k}: {v + ''}</div>
+            ))}
         </div>
     )
 
@@ -134,7 +125,7 @@ export default function Map() {
 
                 {/* Student addresses layer - Blue */}
                 <LayerGroup>
-                    {studentAddresses.map((point) => (
+                    {assignments.map((point) => (
                         <CircleMarker
                             key={point.student_id}
                             center={[point.latitude, point.longitude]}
