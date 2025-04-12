@@ -1,7 +1,7 @@
 "use client"
 
 import {useEffect, useRef, useState} from "react"
-import {CircleMarker, LayerGroup, MapContainer, Popup, TileLayer, useMap} from "react-leaflet"
+import {CircleMarker, GeoJSON, LayerGroup, MapContainer, Popup, TileLayer, useMap} from "react-leaflet"
 import "leaflet/dist/leaflet.css"
 
 type Point = {
@@ -33,6 +33,7 @@ function SetViewOnClick({coords}: { coords: { lat: number; lng: number } }) {
 export default function Map() {
     const [assignments, setAssignments] = useState<Assignment[]>([])
     const [busStops, setBusStops] = useState<BusStop[]>([])
+    const [roadsGeoJSON, setRoadsGeoJSON] = useState<any>([])
     const [activePoint, setActivePoint] = useState<Point | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -46,9 +47,11 @@ export default function Map() {
                 const rs = await Promise.all([
                     fetch(BASE_URL + "/assignments").then(res => res.json()),
                     fetch(BASE_URL + "/bus-stops").then(res => res.json()),
+                    fetch(BASE_URL + "/roads/hanoi").then(res => res.json()),
                 ])
                 setAssignments(rs[0])
                 setBusStops(rs[1])
+                setRoadsGeoJSON(rs[2])
                 setError(null)
             } catch (error) {
                 console.error("Error loading points data:", error)
@@ -90,6 +93,18 @@ export default function Map() {
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
+
+                {/* Roads GeoJSON Layer with gray lines */}
+                {roadsGeoJSON && (
+                    <GeoJSON
+                        data={roadsGeoJSON}
+                        style={{
+                            color: "#555555",
+                            weight: 2,
+                            opacity: 1,
+                        }}
+                    />
+                )}
 
                 {/* Bus stops layer with circles - Red */}
                 <LayerGroup>

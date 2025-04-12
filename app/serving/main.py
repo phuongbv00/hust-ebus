@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from deps.biz import get_hanoi_roads_geojson
+
 # Load environment variables from .env
 load_dotenv()
 
@@ -59,6 +61,11 @@ def get_bus_stops():
                 }
                 for b in bus_stops
             ]
+
+
+@app.get("/roads/hanoi")
+def get_roads():
+    return get_hanoi_roads_geojson("full")
 
 
 # Entry point for local development
