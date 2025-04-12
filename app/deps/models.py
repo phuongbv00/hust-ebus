@@ -111,8 +111,7 @@ class Road:
 
 
 class Student:
-    def __init__(self, student_id: int, name: str, address: str,
-                 longitude: float, latitude: float):
+    def __init__(self, student_id: int, longitude: float, latitude: float, name: str, address: str):
         self.student_id = student_id
         self.name = name
         self.address = address
