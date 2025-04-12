@@ -8,37 +8,8 @@ from sklearn.cluster import DBSCAN, KMeans
 from sklearn.preprocessing import StandardScaler
 
 from batch.core import Job
-from deps.models import Student
+from deps.biz import get_rand_students
 from deps.spark import spark_read_db, get_spark_session, spark_write_db
-
-
-def get_students() -> np.ndarray:
-    """
-    Trả về danh sách học sinh cố định
-    """
-    students = np.array([
-        Student(9931539948, 105.8360893, 21.0276221, "Dương Nguyễn", "Cầu Giấy"),
-        Student(4806919622, 105.8549965, 21.0336298, "Hạnh Hữu Bùi", "Đống Đa"),
-        Student(4364361735, 105.8223488, 21.0270627, "Phương Phạm", "Cầu Giấy"),
-        Student(4523072389, 105.8290578, 21.0383505, "Hoàng Mai", "Tây Hồ"),
-        Student(6413826385, 105.8250572, 21.016337, "Nhật Trần", "Cầu Giấy"),
-        Student(4784540821, 105.8457267, 21.0206823, "Nhật Dương", "Hoàng Mai"),
-        Student(4151407589, 105.8472795, 21.0310565, "Lâm Lê", "Nhật Tân"),
-        Student(4266207190, 105.8196451, 21.0354013, "Yến Phạm", "Cầu Giấy"),
-        Student(7076707481, 105.8464378, 21.0295292, "Tú Nguyễn", "Nam Trung Yên"),
-        Student(6813546250, 105.852931, 21.023654, "Khoa Đặng", "Xuân Hòa"),
-        Student(7176669284, 105.8469548, 21.0312175, "Nhật Vũ", "Cầu Giấy"),
-        Student(12105870161, 105.8509796, 21.0164056, "Lâm Mai", "Trung Kính"),
-        Student(12105870163, 105.8512108, 21.0164755, "Xuân Hữu", "Chính Kinh"),
-        Student(12116601426, 105.8495133, 21.0183826, "Trần Phương", "Nhân Hòa"),
-        Student(5609998748, 105.8144167, 21.0272458, "Dương Phạm", "Trung Kính"),
-        Student(6659047609, 105.8511002, 21.0055964, "Đặng Vũ", "Cầu Giấy"),
-        Student(6691245500, 105.822345, 21.0270182, "Nguyễn Yến", "Cầu Giấy"),
-        Student(3294741139, 105.8273413, 21.061389, "Xuân Dương", "Cầu Giấy"),
-        Student(6850834185, 105.8475335, 21.0404928, "Yến Trần", "Cầu Giấy"),
-        Student(12129136301, 105.8514078, 21.0239132, "Xuân Mai", "Cầu Giấy"),
-    ])
-    return students
 
 
 def find_optimal_eps(X: np.ndarray) -> float:
@@ -199,11 +170,11 @@ def find_bus_stops_df(spark: SparkSession, roads_df: DataFrame, cluster_centers:
 
 
 class UC01Job(Job):
-    def run(self, *args, **kwargs):
+    def run(self, size=50, *args, **kwargs):
         spark = get_spark_session()
 
         roads_df = spark_read_db("SELECT * FROM road_points")
-        students = get_students()
+        students = np.array(get_rand_students(size))
 
         if students.size > 0 and roads_df:
             # Thực hiện phân cụm

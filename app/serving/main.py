@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from deps.biz import get_hanoi_roads_geojson
+from deps.biz import get_hanoi_roads_geojson, DATABASE_URL
 
 # Load environment variables from .env
 load_dotenv()
@@ -20,9 +20,6 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
 )
-
-DATABASE_URL = f"postgresql://{os.getenv('DB_USER')}:{os.getenv('DB_PASS')}@localhost:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
-
 
 @app.get("/assignments")
 def get_assignments():

@@ -2,7 +2,7 @@ import os
 
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from pydantic import BaseModel
 
 from batch.core import JobOrchestrator, JobExecution
@@ -33,8 +33,9 @@ class JobExecutionResponse(BaseModel):
 
 
 @app.get("/job/{name}")
-def launch_job(name: str):
-    return JobExecutionResponse.from_(job_orchestrator.launch(name))
+def launch_job(name: str, request: Request):
+    kwargs = dict(request.query_params)
+    return JobExecutionResponse.from_(job_orchestrator.launch(name, **kwargs))
 
 
 @app.get("/job/{name}/executions")

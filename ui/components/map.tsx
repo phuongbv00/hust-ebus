@@ -106,6 +106,23 @@ export default function Map() {
                     />
                 )}
 
+                {/* Student addresses layer - Blue */}
+                <LayerGroup>
+                    {assignments.map((point) => (
+                        <CircleMarker
+                            key={point.student_id}
+                            center={[point.latitude, point.longitude]}
+                            radius={6}
+                            pathOptions={{color: "blue", fillColor: "blue", fillOpacity: 0.8}}
+                            eventHandlers={{
+                                click: () => centerOnPoint(point),
+                            }}
+                        >
+                            <Popup>{renderPopupContent(point)}</Popup>
+                        </CircleMarker>
+                    ))}
+                </LayerGroup>
+
                 {/* Bus stops layer with circles - Red */}
                 <LayerGroup>
                     {busStops.map((point) => (
@@ -135,23 +152,6 @@ export default function Map() {
                                 <Popup>{renderPopupContent(point)}</Popup>
                             </CircleMarker>
                         </div>
-                    ))}
-                </LayerGroup>
-
-                {/* Student addresses layer - Blue */}
-                <LayerGroup>
-                    {assignments.map((point) => (
-                        <CircleMarker
-                            key={point.student_id}
-                            center={[point.latitude, point.longitude]}
-                            radius={6}
-                            pathOptions={{color: "blue", fillColor: "blue", fillOpacity: 0.8}}
-                            eventHandlers={{
-                                click: () => centerOnPoint(point),
-                            }}
-                        >
-                            <Popup>{renderPopupContent(point)}</Popup>
-                        </CircleMarker>
                     ))}
                 </LayerGroup>
 

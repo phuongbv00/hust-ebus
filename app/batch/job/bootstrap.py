@@ -1,30 +1,41 @@
+import random
+
 import geopandas as gpd
 import pandas as pd
+from pyspark.sql import Window
+from pyspark.sql.functions import col, udf, row_number, lit
+from pyspark.sql.types import FloatType, StringType
 from shapely.geometry import LineString, MultiLineString
 
 from batch.core import Job
 from deps.s3 import s3_upload
-from deps.spark import spark_read_s3, spark_read_db, spark_write_db, get_spark_session
+from deps.spark import spark_read_s3, spark_write_db, get_spark_session
 
 
-def _seed_std_addresses(mode="cropped"):
-    """
-    Seed student addresses
-    :param mode: "cropped" or "full"
-    """
-    local_seed_filepath = f"data/hanoi_points_{mode}.csv"
+def _seed_students():
+    spark = get_spark_session()  # must declare to make udf works
+
+    @udf(returnType=StringType())
+    def fake_name():
+        first_names = [
+            'Anh', 'Minh', 'Lan', 'Thu', 'Quyen', 'Mai', 'Hoa', 'Duc', 'Thanh', 'Tuan',
+            'Bich', 'Hien', 'Dai', 'Kim', 'Linh', 'Bao', 'Tung', 'Hoai', 'Trinh', 'Vui',
+            'Chau', 'Quoc', 'Tam', 'Tram', 'Yen', 'Ha', 'Cuong', 'Hai', 'Vi', 'Tao'
+        ]
+        last_names = ['Nguyen', 'Tran', 'Le', 'Pham', 'Hoang', 'Ngo', 'Vu', 'Dang', 'Bui', 'Do']
+        return f"{random.choice(first_names)} {random.choice(last_names)}"
+
+    local_seed_filepath = f"data/hanoi_points_full.csv"
     s3_key = "hanoi_points.csv"
     s3_upload(local_seed_filepath, s3_key)
-    df = spark_read_s3(s3_key)
-    df = df.withColumnRenamed("osm_id", "std_id")
-    df = df.drop("osm_type", "geom_type")
-    spark_write_db("std_address", df, "overwrite")
-    query = """
-        SELECT *
-        FROM std_address
-    """
-    df = spark_read_db(query)
-    df.show()
+    df = spark_read_s3(s3_key) \
+        .withColumnRenamed("name", "address") \
+        .withColumn("student_id", row_number().over(Window.orderBy(lit(1)))) \
+        .withColumn("name", fake_name()) \
+        .withColumn("longitude", col("longitude").cast(FloatType())) \
+        .withColumn("latitude", col("latitude").cast(FloatType())) \
+        .drop("osm_id", "osm_type", "geom_type")
+    spark_write_db("students", df, "overwrite")
 
 
 def _seed_roads():
@@ -76,5 +87,5 @@ def _seed_roads():
 
 class BootstrapJob(Job):
     def run(self, *args, **kwargs):
-        _seed_std_addresses()
+        _seed_students()
         _seed_roads()
