@@ -1,6 +1,6 @@
 import numpy as np
 from pyspark.sql import SparkSession, DataFrame
-from pyspark.sql.functions import col, radians, sin, cos, asin, sqrt, pow, row_number, monotonically_increasing_id
+from pyspark.sql.functions import col, radians, sin, cos, asin, sqrt, pow, row_number, monotonically_increasing_id, lit
 from pyspark.sql.window import Window
 from sklearn.cluster import DBSCAN, KMeans
 from sklearn.neighbors import NearestNeighbors
@@ -104,7 +104,7 @@ def find_bus_stops_df(spark: SparkSession, roads_df: DataFrame, cluster_centers:
     a = pow(sin(dlat / 2), 2) + cos(lat1) * cos(lat2) * pow(sin(dlng / 2), 2)
     c = 2 * asin(sqrt(a))
 
-    with_distance_df = joined_df.withColumn("distance", EARTH_RADIUS_M * c)
+    with_distance_df = joined_df.withColumn("distance", lit(EARTH_RADIUS_M * c))
 
     # Tìm road point gần nhất với mỗi cluster
     window = Window.partitionBy("cluster_id").orderBy("distance")
@@ -112,7 +112,7 @@ def find_bus_stops_df(spark: SparkSession, roads_df: DataFrame, cluster_centers:
         .filter(col("rn") == 1) \
         .select("cluster_id", "road_id", "latitude", "longitude") \
         .withColumnRenamed("cluster_id", "stop_id") \
-        .withColumn("stop_id", col("stop_id") + 1)
+        .withColumn("stop_id", col("stop_id") + lit(1))
 
 
 class UC01Job(Job):
