@@ -9,48 +9,83 @@ from batch.core import Job
 from deps.biz import get_rand_students
 from deps.spark import spark_read_db, get_spark_session, spark_write_db
 
-EARTH_RADIUS_M = 6_371_000  # in meter
+# Define the Earth's radius in meters
+EARTH_RADIUS_M = 6_371_000
 
 
-def haversine_distance(lat1, lon1, lat2, lon2):
-    lat1, lon1, lat2, lon2 = map(np.radians, [lat1, lon1, lat2, lon2])
+def haversine_distance(lat1, lng1, lat2, lng2):
+    """
+    Tính khoảng cách Haversine giữa hai tọa độ địa lý (đơn vị: mét)
+    """
+    lat1, lng1, lat2, lng2 = map(np.radians, [lat1, lng1, lat2, lng2])
     dlat = lat2 - lat1
-    dlon = lon2 - lon1
-    a = np.sin(dlat / 2.0) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2.0) ** 2
+    dlng = lng2 - lng1
+    a = np.sin(dlat / 2.0) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlng / 2.0) ** 2
     c = 2 * np.arcsin(np.sqrt(a))
     return EARTH_RADIUS_M * c
 
 
 def find_eps_via_k_distance(x: np.ndarray) -> float:
+    """
+    Tìm epsilon tối ưu cho DBSCAN bằng biểu đồ k-khoảng cách
+    """
     neighbors = NearestNeighbors(n_neighbors=2)
     neighbors_fit = neighbors.fit(x)
     distances, _ = neighbors_fit.kneighbors(x)
+
+    # Sắp xếp khoảng cách tăng dần
     distances = np.sort(distances[:, 1])
+
+    # Xác định điểm 'elbow' (góc khuỷu) bằng ngưỡng lệch chuẩn
     diff = np.diff(distances)
     elbow_point = np.where(diff > np.mean(diff) + np.std(diff))[0][0]
-    return distances[elbow_point]
+    eps = distances[elbow_point]
+
+    print(f"[INFO] Estimated epsilon from k-distance graph: {eps:.2f}")
+    return eps
 
 
 def get_initial_k_by_dbscan(x: np.ndarray) -> int:
+    """
+    Ước lượng số lượng cụm ban đầu bằng thuật toán DBSCAN
+    """
     eps = find_eps_via_k_distance(x)
     dbscan = DBSCAN(eps=eps, min_samples=2)
     labels = dbscan.fit_predict(x)
-    return len(set(labels)) - (1 if -1 in labels else 0)
+    n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
+
+    print(f"[INFO] Initial number of clusters estimated by DBSCAN: {n_clusters}")
+    return n_clusters
 
 
-def is_kmeans_clusters_valid(x: np.ndarray, labels: np.ndarray, centroids: np.ndarray, max_distance_m: float,
-                             coverage_ratio=0.9) -> bool:
+def is_kmeans_clusters_valid(x: np.ndarray, labels: np.ndarray, centroids: np.ndarray,
+                             max_distance_m: float, coverage_ratio: float) -> bool:
+    """
+    Kiểm tra điều kiện hợp lệ của cụm KMeans:
+    Ít nhất {coverage_ratio*100}% số điểm trong mỗi cụm có khoảng cách tới tâm cụm nhỏ hơn max_distance_m.
+    """
     for i, center in enumerate(centroids):
         cluster_points = x[labels == i]
         if len(cluster_points) == 0:
+            print(f"[WARN] Cluster {i} has no points.")
             return False
+
+        # Tính khoảng cách từ từng điểm trong cụm tới tâm cụm (sử dụng Haversine)
         distances = np.array([
             haversine_distance(p[0], p[1], center[0], center[1])
             for p in cluster_points
         ])
+
         ratio_within_range = np.sum(distances <= max_distance_m) / len(distances)
+
+        print(f"[INFO] Cluster {i}: {ratio_within_range:.2%} within {max_distance_m} meters")
+
         if ratio_within_range < coverage_ratio:
+            print(
+                f"[WARN] Cluster {i} does not meet coverage requirement ({ratio_within_range:.2%} < {coverage_ratio:.2%})")
             return False
+
+    print(f"[INFO] All clusters satisfy the {coverage_ratio:.0%} coverage constraint within {max_distance_m} meters.")
     return True
 
 
