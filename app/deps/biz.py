@@ -31,3 +31,18 @@ def get_rand_students(limit=100) -> list[Student]:
                 Student(s[0], s[1], s[2], s[3], s[4])
                 for s in students
             ]
+
+
+def get_students(limit=100) -> list[Student]:
+    with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+            cur.execute(f"""
+                   SELECT student_id, longitude, latitude, name, address
+                   FROM students
+                   LIMIT {limit}
+               """)
+            students = cur.fetchall()
+            return [
+                Student(s[0], s[1], s[2], s[3], s[4])
+                for s in students
+            ]

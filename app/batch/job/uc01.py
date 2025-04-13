@@ -6,7 +6,7 @@ from sklearn.cluster import DBSCAN, KMeans
 from sklearn.neighbors import NearestNeighbors
 
 from batch.core import Job
-from deps.biz import get_rand_students
+from deps.biz import get_students
 from deps.spark import spark_read_db, get_spark_session, spark_write_db
 
 # Define the Earth's radius in meters
@@ -156,7 +156,7 @@ class UC01Job(Job):
         spark = get_spark_session()
 
         roads_df = spark_read_db("SELECT * FROM road_points")
-        students = get_rand_students(student_count)
+        students = get_students(student_count)
         students_coordinates = np.array([[s.latitude, s.longitude] for s in students])
 
         if len(students) > 0 and roads_df:

@@ -139,14 +139,14 @@ export default function Map() {
                     />
                 )}
 
-                {/* Student addresses layer - Blue */}
+                {/* Student addresses layer */}
                 <LayerGroup>
                     {assignments.map((point) => (
                         <CircleMarker
                             key={point.student_id}
                             center={[point.latitude, point.longitude]}
                             radius={6}
-                            pathOptions={{color: "blue", fillColor: "blue", fillOpacity: 0.8}}
+                            pathOptions={{color: "#1d4ed8", fillColor: "#1d4ed8", fillOpacity: 0.8}}
                             eventHandlers={{
                                 click: () => centerOnPoint(point),
                             }}
@@ -156,7 +156,7 @@ export default function Map() {
                     ))}
                 </LayerGroup>
 
-                {/* Student clusters layer with circles - Yellow */}
+                {/* Student clusters layer with circles */}
                 {showStudentClusters ? (
                     <LayerGroup>
                         {studentClusters.map((point) => (
@@ -165,7 +165,7 @@ export default function Map() {
                                 <CircleMarker
                                     center={[point.latitude, point.longitude]}
                                     radius={6}
-                                    pathOptions={{color: "yellow", fillColor: "yellow", fillOpacity: 0.8}}
+                                    pathOptions={{color: "#16a34a", fillColor: "#16a34a", fillOpacity: 0.8}}
                                     eventHandlers={{
                                         click: () => centerOnPoint(point),
                                     }}
@@ -178,7 +178,7 @@ export default function Map() {
                 ) : ''}
 
 
-                {/* Bus stops layer with circles - Red */}
+                {/* Bus stops layer with circles */}
                 {showBusStops ? (
                     <LayerGroup>
                         {busStops.map((point) => (
@@ -187,7 +187,7 @@ export default function Map() {
                                 <CircleMarker
                                     center={[point.latitude, point.longitude]}
                                     radius={6}
-                                    pathOptions={{color: "red", fillColor: "red", fillOpacity: 0.8}}
+                                    pathOptions={{color: "#ef4444", fillColor: "#ef4444", fillOpacity: 0.8}}
                                     eventHandlers={{
                                         click: () => centerOnPoint(point),
                                     }}
