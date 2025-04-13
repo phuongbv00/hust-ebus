@@ -9,10 +9,9 @@ import {cn} from '@/lib/utils'
 import {CheckCircle, Loader2, XCircle} from 'lucide-react'
 
 export default function JobFilterForm({className}: { className?: string }) {
-    const [studentCount, setStudentCount] = useState(200)
+    const [studentCount, setStudentCount] = useState(null)
     const [walkMaxDistance, setWalkMaxDistance] = useState(500)
-    const [coverageRatio, setCoverageRatio] = useState(0.9)
-    const [maxBusStopCount, setMaxBusStopCount] = useState(200)
+    const [coverageRatio, setCoverageRatio] = useState(null)
 
     const [loading, setLoading] = useState(false)
     const [response, setResponse] = useState<any>(null)
@@ -26,11 +25,16 @@ export default function JobFilterForm({className}: { className?: string }) {
         setExecutions(null)
 
         const params = new URLSearchParams({
-            student_count: studentCount.toString(),
             walk_max_distance: walkMaxDistance.toString(),
-            coverage_ratio: coverageRatio.toString(),
-            max_bus_stop_count: maxBusStopCount.toString(),
         })
+
+        if (studentCount) {
+            params.append("student_count", studentCount)
+        }
+
+        if (coverageRatio) {
+            params.append("coverage_ratio", coverageRatio)
+        }
 
         try {
             const res = await fetch(`http://localhost:8000/job/uc01?${params}`)
@@ -126,7 +130,8 @@ export default function JobFilterForm({className}: { className?: string }) {
                                         <>
                                             <XCircle className="text-red-500 w-5 h-5"/>
                                             <span className="text-red-600 text-sm">Lỗi xử lý</span>
-                                            <pre className="bg-muted p-3 rounded-md max-h-40 overflow-auto">{exec.error}</pre>
+                                            <pre
+                                                className="bg-muted p-3 rounded-md max-h-40 overflow-auto">{exec.error}</pre>
                                         </>
                                     ) : ''}
                                 </div>
@@ -135,8 +140,6 @@ export default function JobFilterForm({className}: { className?: string }) {
                     </div>
                 )}
             </Card>
-
-
         </div>
     )
 }

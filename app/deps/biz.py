@@ -33,13 +33,13 @@ def get_rand_students(limit=100) -> list[Student]:
             ]
 
 
-def get_students(limit=100) -> list[Student]:
+def get_students(limit: int | None) -> list[Student]:
     with psycopg.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
             cur.execute(f"""
                    SELECT student_id, longitude, latitude, name, address
                    FROM students
-                   LIMIT {limit}
+                   {f"LIMIT {limit}" if limit else ""}
                """)
             students = cur.fetchall()
             return [

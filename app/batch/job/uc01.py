@@ -151,8 +151,12 @@ def find_bus_stops_df(spark: SparkSession, roads_df: DataFrame, cluster_centers:
 
 
 class UC01Job(Job):
-    def run(self, student_count: int = 100, walk_max_distance: int = 5000, coverage_ratio: float = 0.9,
-            max_bus_stop_count: int = 100):
+    def run(self, **kwargs):
+        # Parse params
+        student_count = kwargs["student_count"] if "student_count" in kwargs else None
+        walk_max_distance = kwargs["walk_max_distance"] if "walk_max_distance" in kwargs else 1000
+        coverage_ratio = kwargs["coverage_ratio"] if "coverage_ratio" in kwargs else 0.9
+
         spark = get_spark_session()
 
         roads_df = spark_read_db("SELECT * FROM road_points")
@@ -160,6 +164,8 @@ class UC01Job(Job):
         students_coordinates = np.array([[s.latitude, s.longitude] for s in students])
 
         if len(students) > 0 and roads_df:
+            max_bus_stop_count = len(students)
+
             # Thực hiện phân cụm
             k, cluster_labels, cluster_centers = find_kmeans_with_walk_constraint(students_coordinates,
                                                                                   walk_max_distance, coverage_ratio,
