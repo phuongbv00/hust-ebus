@@ -1,7 +1,7 @@
 "use client"
 
 import {useEffect, useRef, useState} from "react"
-import {CircleMarker, GeoJSON, LayerGroup, MapContainer, Popup, TileLayer, useMap} from "react-leaflet"
+import {CircleMarker, GeoJSON, LayerGroup, MapContainer, Popup, TileLayer, useMap, ZoomControl} from "react-leaflet"
 import "leaflet/dist/leaflet.css"
 import {Card} from "@/components/ui/card";
 import {Checkbox} from "@/components/ui/checkbox"
@@ -99,9 +99,11 @@ export default function Map() {
 
     return (
         <div className="w-full h-screen">
-            <Card className="fixed top-[10] end-[10] p-4 z-[1000]">
+            <Card className="fixed top-3 end-3 p-4 z-[1000] rounded-md">
                 <div className="flex items-center space-x-2">
-                    <Checkbox id="chk-clusters" checked={showStudentClusters}
+                    <Checkbox id="chk-clusters"
+                              className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
+                              checked={showStudentClusters}
                               onCheckedChange={setShowStudentClusters}/>
                     <label
                         htmlFor="chk-clusters"
@@ -111,7 +113,9 @@ export default function Map() {
                     </label>
                 </div>
                 <div className="flex items-center space-x-2">
-                    <Checkbox id="chk-bus-stops" checked={showBusStops}
+                    <Checkbox id="chk-bus-stops"
+                              className="data-[state=checked]:bg-destructive data-[state=checked]:border-destructive"
+                              checked={showBusStops}
                               onCheckedChange={setShowBusStops}/>
                     <label
                         htmlFor="chk-bus-stops"
@@ -121,7 +125,8 @@ export default function Map() {
                     </label>
                 </div>
             </Card>
-            <MapContainer center={defaultCenter} zoom={13} style={{height: "100%", width: "100%"}} ref={mapRef}>
+            <MapContainer center={defaultCenter} zoom={13} style={{height: "100%", width: "100%"}} ref={mapRef}
+                          zoomControl={false}>
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -203,6 +208,8 @@ export default function Map() {
                 {/* Set view to active point if selected */}
                 {activePoint && <SetViewOnClick
                     coords={{lat: activePoint.latitude, lng: activePoint.longitude}}/>}
+
+                <ZoomControl position="bottomright"/>
             </MapContainer>
         </div>
     )

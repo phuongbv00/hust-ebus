@@ -1,5 +1,7 @@
-import {ReactNode, useState, DragEvent} from "react";
-import {Menu, X, Trash2} from "lucide-react";
+import {DragEvent, ReactNode, useRef, useState} from "react";
+import {Menu, Trash2, X} from "lucide-react";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
 
 interface LayoutProps {
     children: ReactNode;
@@ -7,7 +9,8 @@ interface LayoutProps {
 
 const Layout = ({children}: LayoutProps) => {
     const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
-    const [uploadedFile, setUploadedFile] = useState<File| null>(null);
+    const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null)
 
     const handleFileUpload = (files: FileList | null) => {
         if (!files || files.length === 0) return;
@@ -62,35 +65,34 @@ const Layout = ({children}: LayoutProps) => {
             >
                 {sidebarOpen && (
                     <>
-                        {/* Close button */}
-                        <button
+                        {/* Close Button */}
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => setSidebarOpen(false)}
-                            className="absolute top-4 right-4 text-gray-800 cursor-pointer text-2xl"
+                            className="absolute top-4 right-4 text-gray-800"
                         >
                             <X size={28}/>
-                        </button>
+                        </Button>
 
-                        <h2 className="text-xl font-bold mb-6">HUST-BUS-STOP</h2>
-                        {/*<nav className="space-y-3">*/}
-                        {/*    <a href="#" className="block hover:text-blue-400">🏠 Home</a>*/}
-                        {/*    <a href="#" className="block hover:text-blue-400">⚙️ Settings</a>*/}
-                        {/*    <a href="#" className="block hover:text-blue-400">📦 Products</a>*/}
-                        {/*</nav>*/}
+                        <h2 className="text-xl font-bold mb-6">HUST BUS STOP</h2>
+
+                        {/* Upload Section */}
                         <div className="space-y-3">
-                            <span
-                                className="text-gray-600 dark:text-gray-400 font-medium">📦 Tải lên danh sách học sinh</span>
+                            <span className="text-gray-600 dark:text-gray-400 font-medium">
+                              📦 Tải lên danh sách sinh viên
+                            </span>
                         </div>
 
-                        {/* Upload CSV zone */}
                         <div
                             onDrop={handleDrop}
                             onDragOver={handleDragOver}
                             className="border-2 border-dashed border-gray-500 p-4 mt-5 rounded text-center cursor-pointer bg-gray-50 hover:bg-gray-200"
-                            onClick={() => document.getElementById("csvInput")?.click()}
+                            onClick={() => fileInputRef.current?.click()}
                         >
                             <p>Kéo & thả file CSV hoặc click để chọn</p>
-                            <input
-                                id="csvInput"
+                            <Input
+                                ref={fileInputRef}
                                 type="file"
                                 accept=".csv"
                                 onChange={(e) => handleFileUpload(e.target.files)}
@@ -98,26 +100,32 @@ const Layout = ({children}: LayoutProps) => {
                             />
                         </div>
 
-                        {/* Uploaded file list */}
+                        {/* Uploaded File List */}
                         {uploadedFile && (
                             <div className="mt-4 space-y-2">
-                                    <div key={uploadedFile.name}
-                                         className="flex items-center border-2 justify-between bg-gray-100 p-2 rounded">
-                                        <span className="truncate font-medium">{uploadedFile.name}</span>
-                                        <button onClick={() => handleRemoveFile()}
-                                                className="text-gray-500 cursor-pointer hover:text-gray-600">
-                                            <Trash2 size={18}/>
-                                        </button>
-                                    </div>
+                                <div className="flex items-center justify-between bg-gray-100 p-2 rounded border">
+                                    <span className="truncate font-medium">{uploadedFile.name}</span>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={handleRemoveFile}
+                                        className="text-gray-500 hover:text-gray-600"
+                                    >
+                                        <Trash2 size={18}/>
+                                    </Button>
+                                </div>
                             </div>
                         )}
 
+                        {/* Upload Button */}
                         <div className="flex mt-4 items-center justify-between">
-                            <button
-                                className={`text-gray-50 p-2 font-medium ${uploadedFile === null ? "bg-gray-600" : "bg-blue-500 cursor-pointer"} w-full rounded`}
-                                disabled={uploadedFile === null} onClick={handleUploadCsv}>
+                            <Button
+                                onClick={handleUploadCsv}
+                                disabled={!uploadedFile}
+                                className="w-full"
+                            >
                                 Tải lên
-                            </button>
+                            </Button>
                         </div>
                     </>
                 )}
@@ -126,12 +134,13 @@ const Layout = ({children}: LayoutProps) => {
             {/* Main Content */}
             <div className="flex-1 bg-white">
                 {!sidebarOpen && (
-                    <button
+                    <Button
+                        size="icon"
                         onClick={() => setSidebarOpen(true)}
-                        className="mb-4 text-gray cursor-pointer absolute top-20 left-2 text-2xl z-9999 bg-white border-2"
+                        className="absolute top-3 start-3 z-[1000]"
                     >
                         <Menu size={34}/>
-                    </button>
+                    </Button>
                 )}
 
                 {children}
