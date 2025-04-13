@@ -20,6 +20,10 @@ type Assignment = Point & {
     name: string
 }
 
+type StudentCluster = Point & {
+    cluster_id: number
+}
+
 // Map center to specified location
 const defaultCenter = {lat: 21.018812412744, lng: 105.83191103813589}
 
@@ -34,6 +38,7 @@ export default function Map() {
     const [assignments, setAssignments] = useState<Assignment[]>([])
     const [busStops, setBusStops] = useState<BusStop[]>([])
     const [roadsGeoJSON, setRoadsGeoJSON] = useState<any>([])
+    const [studentClusters, setStudentClusters] = useState<StudentCluster[]>([])
     const [activePoint, setActivePoint] = useState<Point | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -48,10 +53,12 @@ export default function Map() {
                     fetch(BASE_URL + "/assignments").then(res => res.json()),
                     fetch(BASE_URL + "/bus-stops").then(res => res.json()),
                     fetch(BASE_URL + "/roads/hanoi").then(res => res.json()),
+                    fetch(BASE_URL + "/student-clusters").then(res => res.json()),
                 ])
                 setAssignments(rs[0])
                 setBusStops(rs[1])
                 setRoadsGeoJSON(rs[2])
+                setStudentClusters(rs[3])
                 setError(null)
             } catch (error) {
                 console.error("Error loading points data:", error)
@@ -125,21 +132,27 @@ export default function Map() {
 
                 {/* Bus stops layer with circles - Red */}
                 <LayerGroup>
+                    {studentClusters.map((point) => (
+                        <div key={point.cluster_id}>
+                            {/* Small circle marker - rendered on top */}
+                            <CircleMarker
+                                center={[point.latitude, point.longitude]}
+                                radius={6}
+                                pathOptions={{color: "yellow", fillColor: "yellow", fillOpacity: 0.8}}
+                                eventHandlers={{
+                                    click: () => centerOnPoint(point),
+                                }}
+                            >
+                                <Popup>{renderPopupContent(point)}</Popup>
+                            </CircleMarker>
+                        </div>
+                    ))}
+                </LayerGroup>
+
+                {/* Bus stops layer with circles - Red */}
+                <LayerGroup>
                     {busStops.map((point) => (
                         <div key={point.stop_id}>
-                            {/* Large circle with radius - rendered first */}
-                            {/*<Circle*/}
-                            {/*    center={[point.latitude, point.longitude]}*/}
-                            {/*    radius={10}*/}
-                            {/*    pathOptions={{*/}
-                            {/*        color: "red",*/}
-                            {/*        fillColor: "red",*/}
-                            {/*        fillOpacity: 0.1,*/}
-                            {/*        // Make the circle non-interactive for mouse events*/}
-                            {/*        className: "pointer-events-none",*/}
-                            {/*    }}*/}
-                            {/*/>*/}
-
                             {/* Small circle marker - rendered on top */}
                             <CircleMarker
                                 center={[point.latitude, point.longitude]}

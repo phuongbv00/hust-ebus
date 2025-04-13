@@ -151,7 +151,8 @@ def find_bus_stops_df(spark: SparkSession, roads_df: DataFrame, cluster_centers:
 
 
 class UC01Job(Job):
-    def run(self, student_count=100, walk_max_distance=5000, coverage_ratio=0.9, max_bus_stop_count=100):
+    def run(self, student_count: int = 100, walk_max_distance: int = 5000, coverage_ratio: float = 0.9,
+            max_bus_stop_count: int = 100):
         spark = get_spark_session()
 
         roads_df = spark_read_db("SELECT * FROM road_points")
@@ -163,6 +164,11 @@ class UC01Job(Job):
             k, cluster_labels, cluster_centers = find_kmeans_with_walk_constraint(students_coordinates,
                                                                                   walk_max_distance, coverage_ratio,
                                                                                   max_bus_stop_count)
+
+            # Lưu tạm toạ độ các cụm
+            cluster_centers_df = spark.createDataFrame(cluster_centers, ["latitude", "longitude"]) \
+                .withColumn("cluster_id", row_number().over(Window.orderBy(lit(1))))
+            spark_write_db("student_clusters", cluster_centers_df, "overwrite")
 
             # Tìm điểm đường gần nhất với mỗi tâm cụm ~ bus stop
             print("[INFO] Bus stops:")

@@ -32,9 +32,29 @@ class JobExecutionResponse(BaseModel):
         )
 
 
+def smart_cast(value: str):
+    """Try to infer and cast a query string value to an appropriate type."""
+    val = value.strip()
+
+    if val.lower() == "true":
+        return True
+    if val.lower() == "false":
+        return False
+    if val.isdigit():
+        return int(val)
+    try:
+        return float(val)
+    except ValueError:
+        pass
+    if "," in val:
+        return [smart_cast(v) for v in val.split(",")]
+    return val  # fallback to string
+
+
 @app.get("/job/{name}")
 def launch_job(name: str, request: Request):
-    kwargs = dict(request.query_params)
+    raw_kwargs = dict(request.query_params)
+    kwargs = {k: smart_cast(v) for k, v in raw_kwargs.items()}
     return JobExecutionResponse.from_(job_orchestrator.launch(name, **kwargs))
 
 

@@ -65,6 +65,21 @@ def get_roads():
     return get_hanoi_roads_geojson("full")
 
 
+@app.get("/student-clusters")
+def get_student_clusters():
+    with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT cluster_id, latitude, longitude FROM student_clusters")
+            clusters = cur.fetchall()
+            return [
+                {
+                    "cluster_id": b[0],
+                    "latitude": b[1],
+                    "longitude": b[2],
+                }
+                for b in clusters
+            ]
+
 # Entry point for local development
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=int(os.getenv("SERVING_PORT", 8000)), reload=True)
