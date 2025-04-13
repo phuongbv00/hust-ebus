@@ -130,11 +130,12 @@ export default function JobFilterForm({className}: { className?: string }) {
                                         <>
                                             <XCircle className="text-red-500 w-5 h-5"/>
                                             <span className="text-red-600 text-sm">Lỗi xử lý</span>
-                                            <pre
-                                                className="bg-muted p-3 rounded-md max-h-40 overflow-auto">{exec.error}</pre>
                                         </>
                                     ) : ''}
                                 </div>
+                                {exec.error ? (
+                                    <pre className="bg-muted p-3 rounded-md max-h-40 overflow-auto">{exec.error}</pre>
+                                ) : ''}
                             </Card>
                         ))}
                     </div>
