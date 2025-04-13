@@ -4,12 +4,21 @@ import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
+from starlette.middleware.cors import CORSMiddleware
 
 from batch.core import JobOrchestrator, JobExecution
 
 load_dotenv()
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
 
 job_orchestrator = JobOrchestrator()
 

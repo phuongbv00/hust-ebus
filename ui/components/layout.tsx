@@ -2,6 +2,8 @@ import {DragEvent, ReactNode, useRef, useState} from "react";
 import {Menu, Trash2, X} from "lucide-react";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
+import JobTriggerForm from "@/components/job-trigger-form";
+import {Card} from "@/components/ui/card";
 
 interface LayoutProps {
     children: ReactNode;
@@ -59,7 +61,7 @@ const Layout = ({children}: LayoutProps) => {
         <div className="flex min-h-screen">
             {/* Sidebar */}
             <aside
-                className={`bg-gray-50 text-gray-800 transition-all duration-300 relative ${
+                className={`bg-gray-50 text-gray-800 transition-all duration-300 relative overflow-y-auto max-h-screen ${
                     sidebarOpen ? "w-80 p-4" : "w-0 p-0 overflow-hidden"
                 }`}
             >
@@ -75,58 +77,61 @@ const Layout = ({children}: LayoutProps) => {
                             <X size={28}/>
                         </Button>
 
-                        <h2 className="text-xl font-bold mb-6">HUST BUS STOP</h2>
+                        <h2 className="text-xl font-bold mb-6">Hệ thống gợi ý<br/>điểm đón trả xe bus</h2>
 
-                        {/* Upload Section */}
-                        <div className="space-y-3">
+                        <Card className="rounded-md p-3 gap-3">
+                            {/* Upload Section */}
+                            <div className="space-y-3">
                             <span className="text-gray-600 dark:text-gray-400 font-medium">
                               📦 Tải lên danh sách sinh viên
                             </span>
-                        </div>
-
-                        <div
-                            onDrop={handleDrop}
-                            onDragOver={handleDragOver}
-                            className="border-2 border-dashed border-gray-500 p-4 mt-5 rounded text-center cursor-pointer bg-gray-50 hover:bg-gray-200"
-                            onClick={() => fileInputRef.current?.click()}
-                        >
-                            <p>Kéo & thả file CSV hoặc click để chọn</p>
-                            <Input
-                                ref={fileInputRef}
-                                type="file"
-                                accept=".csv"
-                                onChange={(e) => handleFileUpload(e.target.files)}
-                                className="hidden"
-                            />
-                        </div>
-
-                        {/* Uploaded File List */}
-                        {uploadedFile && (
-                            <div className="mt-4 space-y-2">
-                                <div className="flex items-center justify-between bg-gray-100 p-2 rounded border">
-                                    <span className="truncate font-medium">{uploadedFile.name}</span>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={handleRemoveFile}
-                                        className="text-gray-500 hover:text-gray-600"
-                                    >
-                                        <Trash2 size={18}/>
-                                    </Button>
-                                </div>
                             </div>
-                        )}
 
-                        {/* Upload Button */}
-                        <div className="flex mt-4 items-center justify-between">
-                            <Button
-                                onClick={handleUploadCsv}
-                                disabled={!uploadedFile}
-                                className="w-full"
+                            <div
+                                onDrop={handleDrop}
+                                onDragOver={handleDragOver}
+                                className="border-2 border-dashed border-gray-500 p-4 rounded text-center cursor-pointer bg-gray-50 hover:bg-gray-200"
+                                onClick={() => fileInputRef.current?.click()}
                             >
-                                Tải lên
-                            </Button>
-                        </div>
+                                <p>Kéo & thả file CSV hoặc click để chọn</p>
+                                <Input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept=".csv"
+                                    onChange={(e) => handleFileUpload(e.target.files)}
+                                    className="hidden"
+                                />
+                            </div>
+
+                            {/* Uploaded File List */}
+                            {uploadedFile && (
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between bg-gray-100 p-2 rounded border">
+                                        <span className="truncate font-medium">{uploadedFile.name}</span>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={handleRemoveFile}
+                                            className="text-gray-500 hover:text-gray-600"
+                                        >
+                                            <Trash2 size={18}/>
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Upload Button */}
+                            <div className="flex items-center justify-between">
+                                <Button
+                                    onClick={handleUploadCsv}
+                                    disabled={!uploadedFile}
+                                    className="w-full"
+                                >
+                                    Tải lên
+                                </Button>
+                            </div>
+                        </Card>
+                        <JobTriggerForm className="mt-4"/>
                     </>
                 )}
             </aside>
