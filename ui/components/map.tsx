@@ -100,7 +100,7 @@ export default function Map() {
 
     return (
         <div className="w-full h-screen">
-            <Card className="fixed top-3 end-3 p-4 z-[1000] rounded-md">
+            <Card className="fixed top-3 end-3 p-4 z-[1000] rounded-md gap-4">
                 <div className="flex items-center space-x-2">
                     <Checkbox id="chk-1"
                               className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
