@@ -1,6 +1,7 @@
 "use client"
 
 import dynamic from "next/dynamic"
+import Layout from "@/components/layout";
 
 export default function Home() {
     // Dynamically import the Map component to avoid SSR issues with Leaflet
@@ -13,8 +14,10 @@ export default function Home() {
     const circleRadius = 500
 
     return (
-        <main className="flex min-h-screen flex-col items-center justify-between">
-            <MapWithNoSSR circleRadius={circleRadius} />
-        </main>
+        <Layout>
+            <main className="flex min-h-screen flex-col items-center justify-between">
+                <MapWithNoSSR circleRadius={circleRadius} />
+            </main>
+        </Layout>
     )
 }

@@ -3,9 +3,10 @@ import os
 import psycopg
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-
+import csv
+import io
 from deps.biz import get_hanoi_roads_geojson, DATABASE_URL
 
 # Load environment variables from .env
@@ -63,6 +64,43 @@ def get_bus_stops():
 @app.get("/roads/hanoi")
 def get_roads():
     return get_hanoi_roads_geojson("full")
+
+
+@app.post("/upload-csv")
+async def upload_csv(file: UploadFile = File(...)):
+    if not file.filename.endswith(".csv"):
+        raise HTTPException(status_code=400, detail="Chỉ chấp nhận file CSV")
+
+    content = await file.read()
+    decoded = content.decode("utf-8")
+    csv_reader = csv.reader(io.StringIO(decoded))
+
+    # Bỏ dòng header
+    rows = list(csv_reader)[1:]
+
+    try:
+        with psycopg.connect(DATABASE_URL) as conn:
+            with conn.cursor() as cur:
+                # Xoá toàn bộ dữ liệu hiện tại
+                cur.execute("DELETE FROM Students")
+
+                # Ghi dữ liệu mới
+                for row in rows:
+                    student_id, name, address, latitude, longitude = row
+                    cur.execute(
+                        """
+                        INSERT INTO Students (student_id, name, address, latitude, longitude)
+                        VALUES (%s, %s, %s, %s, %s)
+                        """,
+                        (int(student_id), name, address, float(latitude), float(longitude))
+                    )
+                conn.commit()
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi ghi dữ liệu: {e}")
+
+    return {"message": f"Tải lên và ghi đè {len(rows)} học sinh thành công"}
+
 
 
 @app.get("/student-clusters")
