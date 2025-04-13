@@ -5,6 +5,7 @@
 - [Python 3.12](https://www.python.org/)
 - [uv](https://docs.astral.sh/uv/)
 - [Docker](https://www.docker.com/)
+- [NodeJS](https://nodejs.org/en/download)
 
 ## Setup
 
@@ -91,3 +92,36 @@ uv sync
     ```shell
     python app/batch/main.py
     ```
+
+#### Run Bootstrap Job
+
+Bootstrap Job is a batch job which seeds database.
+
+```shell
+curl http://localhost:8000/job/bootstrap
+```
+
+Check job progress
+
+```shell
+curl http://localhost:8000/job/bootstrap/executions
+```
+
+#### Run Serving Service
+
+- Option 1: PyCharm
+    - Right-click on `app/serving/main.py` → Run 'main'
+- Option 2: Terminal
+    ```shell
+    python app/serving/main.py
+    ```
+
+#### Run UI
+
+```shell
+cd ui
+npm install
+npm run dev
+```
+
+Access to http://localhost:3000
