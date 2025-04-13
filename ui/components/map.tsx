@@ -3,6 +3,8 @@
 import {useEffect, useRef, useState} from "react"
 import {CircleMarker, GeoJSON, LayerGroup, MapContainer, Popup, TileLayer, useMap} from "react-leaflet"
 import "leaflet/dist/leaflet.css"
+import {Card} from "@/components/ui/card";
+import {Checkbox} from "@/components/ui/checkbox"
 
 type Point = {
     latitude: number
@@ -43,6 +45,8 @@ export default function Map() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const mapRef = useRef(null)
+    const [showStudentClusters, setShowStudentClusters] = useState(true)
+    const [showBusStops, setShowBusStops] = useState(true)
 
     // Fetch points data from JSON files
     useEffect(() => {
@@ -95,6 +99,28 @@ export default function Map() {
 
     return (
         <div className="w-full h-screen">
+            <Card className="fixed top-[10] end-[10] p-4 z-[1000]">
+                <div className="flex items-center space-x-2">
+                    <Checkbox id="chk-clusters" checked={showStudentClusters}
+                              onCheckedChange={setShowStudentClusters}/>
+                    <label
+                        htmlFor="chk-clusters"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                        Clusters
+                    </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                    <Checkbox id="chk-bus-stops" checked={showBusStops}
+                              onCheckedChange={setShowBusStops}/>
+                    <label
+                        htmlFor="chk-bus-stops"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                        Bus Stops
+                    </label>
+                </div>
+            </Card>
             <MapContainer center={defaultCenter} zoom={13} style={{height: "100%", width: "100%"}} ref={mapRef}>
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -130,43 +156,49 @@ export default function Map() {
                     ))}
                 </LayerGroup>
 
-                {/* Bus stops layer with circles - Red */}
-                <LayerGroup>
-                    {studentClusters.map((point) => (
-                        <div key={point.cluster_id}>
-                            {/* Small circle marker - rendered on top */}
-                            <CircleMarker
-                                center={[point.latitude, point.longitude]}
-                                radius={6}
-                                pathOptions={{color: "yellow", fillColor: "yellow", fillOpacity: 0.8}}
-                                eventHandlers={{
-                                    click: () => centerOnPoint(point),
-                                }}
-                            >
-                                <Popup>{renderPopupContent(point)}</Popup>
-                            </CircleMarker>
-                        </div>
-                    ))}
-                </LayerGroup>
+                {/* Student clusters layer with circles - Yellow */}
+                {showStudentClusters ? (
+                    <LayerGroup>
+                        {studentClusters.map((point) => (
+                            <div key={point.cluster_id}>
+                                {/* Small circle marker - rendered on top */}
+                                <CircleMarker
+                                    center={[point.latitude, point.longitude]}
+                                    radius={6}
+                                    pathOptions={{color: "yellow", fillColor: "yellow", fillOpacity: 0.8}}
+                                    eventHandlers={{
+                                        click: () => centerOnPoint(point),
+                                    }}
+                                >
+                                    <Popup>{renderPopupContent(point)}</Popup>
+                                </CircleMarker>
+                            </div>
+                        ))}
+                    </LayerGroup>
+                ) : ''}
+
 
                 {/* Bus stops layer with circles - Red */}
-                <LayerGroup>
-                    {busStops.map((point) => (
-                        <div key={point.stop_id}>
-                            {/* Small circle marker - rendered on top */}
-                            <CircleMarker
-                                center={[point.latitude, point.longitude]}
-                                radius={6}
-                                pathOptions={{color: "red", fillColor: "red", fillOpacity: 0.8}}
-                                eventHandlers={{
-                                    click: () => centerOnPoint(point),
-                                }}
-                            >
-                                <Popup>{renderPopupContent(point)}</Popup>
-                            </CircleMarker>
-                        </div>
-                    ))}
-                </LayerGroup>
+                {showBusStops ? (
+                    <LayerGroup>
+                        {busStops.map((point) => (
+                            <div key={point.stop_id}>
+                                {/* Small circle marker - rendered on top */}
+                                <CircleMarker
+                                    center={[point.latitude, point.longitude]}
+                                    radius={6}
+                                    pathOptions={{color: "red", fillColor: "red", fillOpacity: 0.8}}
+                                    eventHandlers={{
+                                        click: () => centerOnPoint(point),
+                                    }}
+                                >
+                                    <Popup>{renderPopupContent(point)}</Popup>
+                                </CircleMarker>
+                            </div>
+                        ))}
+                    </LayerGroup>
+                ) : ''}
+
 
                 {/* Set view to active point if selected */}
                 {activePoint && <SetViewOnClick
