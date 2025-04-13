@@ -1,3 +1,5 @@
+import csv
+import os
 import random
 
 import geopandas as gpd
@@ -8,6 +10,7 @@ from pyspark.sql.types import FloatType, StringType
 from shapely.geometry import LineString, MultiLineString
 
 from batch.core import Job
+from deps.biz import get_rand_students
 from deps.s3 import s3_upload
 from deps.spark import spark_read_s3, spark_write_db, get_spark_session
 
@@ -85,7 +88,30 @@ def _seed_roads():
     spark_write_db("road_points", points_sdf, "overwrite")
 
 
+def _export_students_to_csv(limit: int = 150):
+    filename = os.path.join("data", f"std_data_{limit}.csv")
+
+    # Call get_rand_students to get random records
+    students = get_rand_students(limit)
+
+    # Open .csv data to write
+    with open(filename, mode='w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+
+        writer.writerow(['student_id', 'longitude', 'latitude', 'name', 'address'])
+
+        for student in students:
+            writer.writerow([
+                student.student_id,
+                student.longitude,
+                student.latitude,
+                student.name,
+                student.address
+            ])
+
+
 class BootstrapJob(Job):
     def run(self, *args, **kwargs):
         _seed_students()
         _seed_roads()
+        _export_students_to_csv()
