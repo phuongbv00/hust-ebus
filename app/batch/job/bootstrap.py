@@ -89,7 +89,8 @@ def _seed_roads():
 
 
 def _export_students_to_csv(limit: int = 150):
-    filename = os.path.join("data", f"std_data_{limit}.csv")
+    filename = os.path.join("..", "..", f"test/data/students_{limit}.csv")
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
 
     # Call get_rand_students to get random records
     students = get_rand_students(limit)
@@ -114,4 +115,6 @@ class BootstrapJob(Job):
     def run(self, *args, **kwargs):
         _seed_students()
         _seed_roads()
-        _export_students_to_csv()
+        _export_students_to_csv(50)
+        _export_students_to_csv(100)
+        _export_students_to_csv(150)

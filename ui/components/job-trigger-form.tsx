@@ -6,7 +6,7 @@ import {Button} from '@/components/ui/button'
 import {Label} from '@/components/ui/label'
 import {Card} from '@/components/ui/card'
 import {cn} from '@/lib/utils'
-import {CheckCircle, Loader2} from 'lucide-react'
+import {CheckCircle, Loader2, XCircle} from 'lucide-react'
 
 export default function JobFilterForm({className}: { className?: string }) {
     const [studentCount, setStudentCount] = useState(200)
@@ -108,7 +108,7 @@ export default function JobFilterForm({className}: { className?: string }) {
                                 <div className="flex flex-col">
                                     <span className="text-sm font-medium text-gray-800">{exec.id}</span>
                                     <span className="text-sm text-gray-600">
-                                        Thời gian xử lý: {exec.execution_time?.toFixed(2)}s
+                                        Thời gian xử lý: {exec.execution_time ? exec.execution_time.toFixed(2) + 's' : ''}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -117,12 +117,18 @@ export default function JobFilterForm({className}: { className?: string }) {
                                             <CheckCircle className="text-green-500 w-5 h-5"/>
                                             <span className="text-green-600 text-sm">Hoàn thành</span>
                                         </>
-                                    ) : (
+                                    ) : exec.status === 0 ? (
                                         <>
                                             <Loader2 className="text-blue-500 w-5 h-5 animate-spin"/>
                                             <span className="text-blue-600 text-sm">Đang xử lý</span>
                                         </>
-                                    )}
+                                    ) : exec.status === -1 ? (
+                                        <>
+                                            <XCircle className="text-red-500 w-5 h-5"/>
+                                            <span className="text-red-600 text-sm">Lỗi xử lý</span>
+                                            <pre className="bg-muted p-3 rounded-md max-h-40 overflow-auto">{exec.error}</pre>
+                                        </>
+                                    ) : ''}
                                 </div>
                             </Card>
                         ))}

@@ -176,6 +176,15 @@ class UC01Job(Job):
             bus_stops_df.show()
             spark_write_db("bus_stops", bus_stops_df, "overwrite")
 
+            # Lưu ma trận (cluster - bus stop)
+            cluster_map_bus_stop_df = bus_stops_df.select("stop_id") \
+                .withColumn("__row_id", monotonically_increasing_id()) \
+                .join(cluster_centers_df.select("cluster_id") \
+                      .withColumn("__row_id", monotonically_increasing_id()),
+                      on="__row_id") \
+                .drop("__row_id")
+            spark_write_db("cluster_bus_stop_map", cluster_map_bus_stop_df, "overwrite")
+
             # Lưu ma trận phân bổ (bus stop - student)
             print("[INFO] Assignments:")
             students_df = spark.createDataFrame([s.student_id for s in students], ["student_id"]) \
