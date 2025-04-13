@@ -45,6 +45,7 @@ export default function Map() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const mapRef = useRef(null)
+    const [showAssignments, setShowAssignments] = useState(true)
     const [showStudentClusters, setShowStudentClusters] = useState(true)
     const [showBusStops, setShowBusStops] = useState(true)
 
@@ -101,27 +102,39 @@ export default function Map() {
         <div className="w-full h-screen">
             <Card className="fixed top-3 end-3 p-4 z-[1000] rounded-md">
                 <div className="flex items-center space-x-2">
-                    <Checkbox id="chk-clusters"
+                    <Checkbox id="chk-1"
+                              className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                              checked={showAssignments}
+                              onCheckedChange={setShowAssignments}/>
+                    <label
+                        htmlFor="chk-1"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                        Students ({assignments.length})
+                    </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                    <Checkbox id="chk-2"
                               className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
                               checked={showStudentClusters}
                               onCheckedChange={setShowStudentClusters}/>
                     <label
-                        htmlFor="chk-clusters"
+                        htmlFor="chk-2"
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     >
-                        Clusters
+                        Clusters ({studentClusters.length})
                     </label>
                 </div>
                 <div className="flex items-center space-x-2">
-                    <Checkbox id="chk-bus-stops"
+                    <Checkbox id="chk-3"
                               className="data-[state=checked]:bg-destructive data-[state=checked]:border-destructive"
                               checked={showBusStops}
                               onCheckedChange={setShowBusStops}/>
                     <label
-                        htmlFor="chk-bus-stops"
+                        htmlFor="chk-3"
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     >
-                        Bus Stops
+                        Bus Stops ({busStops.length})
                     </label>
                 </div>
             </Card>
@@ -145,21 +158,23 @@ export default function Map() {
                 )}
 
                 {/* Student addresses layer */}
-                <LayerGroup>
-                    {assignments.map((point) => (
-                        <CircleMarker
-                            key={point.student_id}
-                            center={[point.latitude, point.longitude]}
-                            radius={6}
-                            pathOptions={{color: "#1d4ed8", fillColor: "#1d4ed8", fillOpacity: 0.8}}
-                            eventHandlers={{
-                                click: () => centerOnPoint(point),
-                            }}
-                        >
-                            <Popup>{renderPopupContent(point)}</Popup>
-                        </CircleMarker>
-                    ))}
-                </LayerGroup>
+                {showAssignments ? (
+                    <LayerGroup>
+                        {assignments.map((point) => (
+                            <CircleMarker
+                                key={point.student_id}
+                                center={[point.latitude, point.longitude]}
+                                radius={6}
+                                pathOptions={{color: "#1d4ed8", fillColor: "#1d4ed8", fillOpacity: 0.8}}
+                                eventHandlers={{
+                                    click: () => centerOnPoint(point),
+                                }}
+                            >
+                                <Popup>{renderPopupContent(point)}</Popup>
+                            </CircleMarker>
+                        ))}
+                    </LayerGroup>
+                ) : ''}
 
                 {/* Student clusters layer with circles */}
                 {showStudentClusters ? (

@@ -29,15 +29,15 @@ def get_assignments():
     with psycopg.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                SELECT a.stop_id, s.student_id, s.name, s.latitude, s.longitude
+                SELECT a.student_id, a.stop_id, s.name, s.latitude, s.longitude
                 FROM assignments a
                 JOIN students s ON a.student_id = s.student_id
             """)
             assignments = cur.fetchall()
             return [
                 {
-                    "stop_id": a[0],
-                    "student_id": a[1],
+                    "student_id": a[0],
+                    "stop_id": a[1],
                     "name": a[2],
                     "latitude": a[3],
                     "longitude": a[4]
