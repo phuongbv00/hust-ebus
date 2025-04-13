@@ -1,3 +1,5 @@
+import csv
+import io
 import os
 
 import psycopg
@@ -5,8 +7,7 @@ import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-import csv
-import io
+
 from deps.biz import get_hanoi_roads_geojson, DATABASE_URL
 
 # Load environment variables from .env
@@ -21,6 +22,7 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
 )
+
 
 @app.get("/assignments")
 def get_assignments():
@@ -82,14 +84,14 @@ async def upload_csv(file: UploadFile = File(...)):
         with psycopg.connect(DATABASE_URL) as conn:
             with conn.cursor() as cur:
                 # Xoá toàn bộ dữ liệu hiện tại
-                cur.execute("DELETE FROM Students")
+                cur.execute("DELETE FROM students")
 
                 # Ghi dữ liệu mới
                 for row in rows:
-                    student_id, name, address, latitude, longitude = row
+                    student_id, longitude, latitude, name, address = row
                     cur.execute(
                         """
-                        INSERT INTO Students (student_id, name, address, latitude, longitude)
+                        INSERT INTO students (student_id, name, address, latitude, longitude)
                         VALUES (%s, %s, %s, %s, %s)
                         """,
                         (int(student_id), name, address, float(latitude), float(longitude))
@@ -100,7 +102,6 @@ async def upload_csv(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Lỗi ghi dữ liệu: {e}")
 
     return {"message": f"Tải lên và ghi đè {len(rows)} học sinh thành công"}
-
 
 
 @app.get("/student-clusters")
@@ -117,6 +118,7 @@ def get_student_clusters():
                 }
                 for b in clusters
             ]
+
 
 # Entry point for local development
 if __name__ == "__main__":
