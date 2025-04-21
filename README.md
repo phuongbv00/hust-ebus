@@ -1,4 +1,4 @@
-# HUST Bus Stop
+# HUST eBus
 
 ## Prerequisites
 
