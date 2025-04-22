@@ -5,7 +5,7 @@ import random
 import geopandas as gpd
 import pandas as pd
 from pyspark.sql import Window
-from pyspark.sql.functions import col, udf, row_number, lit
+from pyspark.sql.functions import col, udf, row_number, lit, rand
 from pyspark.sql.types import FloatType, StringType
 from shapely.geometry import LineString, MultiLineString
 
@@ -123,37 +123,19 @@ def _export_students_to_csv(limit: int = 150):
                 student.address
             ])
 
-# Tạo file buses.csv để lưu vào database
-def _export_buses_to_csv(total_buses: int = 10):
-    filename = os.path.join("data", f"buses.csv")
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
-
-    buses = []
-    for i in range(1, total_buses + 1):
-        base_lat, base_long = random.choice(road_coords)
-        lat = base_lat + random.uniform(-0.001, 0.001)
-        long = base_long + random.uniform(-0.001, 0.001)
-        buses.append([
-            i,
-            round(long, 6),
-            round(lat, 6),
-            random.choice([30, 40, 50, 60])
-        ])
-
-    with open(filename, mode='w', newline='', encoding='utf-8') as file:
-        writer = csv.writer(file)
-        writer.writerow(["bus_id", "longitude", "latitude", "capacity"])
-        writer.writerows(buses)
-
-
-def _seed_buses():
+def _seed_buses(total_bus: int = 20):
     # Import danh sách các xe bus
-    local_seed_filepath = f"data/buses.csv"
-    s3_key = "buses.csv"
+    local_seed_filepath = f"data/hanoi_points_full.csv"
+    s3_key = "hanoi_points.csv"
     s3_upload(local_seed_filepath, s3_key)
     df = spark_read_s3(s3_key) \
+        .orderBy(rand()) \
+        .limit(total_bus) \
+        .withColumn("bus_id", row_number().over(Window.orderBy(lit(1)))) \
+        .withColumn("capacity", lit(50) ) \
         .withColumn("longitude", col("longitude").cast(FloatType())) \
-        .withColumn("latitude", col("latitude").cast(FloatType()))
+        .withColumn("latitude", col("latitude").cast(FloatType())) \
+        .drop("osm_id", "osm_type", "geom_type", "name")
     spark_write_db("buses", df, "overwrite")
 
     return
@@ -162,7 +144,6 @@ class BootstrapJob(Job):
     def run(self, *args, **kwargs):
         _seed_students()
         _seed_roads()
-        _export_buses_to_csv(10)
         _seed_buses()
         _export_students_to_csv(50)
         _export_students_to_csv(100)

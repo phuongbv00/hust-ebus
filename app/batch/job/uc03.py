@@ -11,18 +11,6 @@ from deps.spark import get_spark_session, spark_read_db, spark_write_db
 # Earth's radius in meters
 EARTH_RADIUS_M = 6_371_000
 
-# def haversine_distance(lat1, lng1, lat2, lng2):
-#     """
-#     Tính khoảng cách Haversine giữa hai tọa độ địa lý (đơn vị: mét)
-#     """
-#     lat1, lng1, lat2, lng2 = map(np.radians, [lat1, lng1, lat2, lng2])
-#     dlat = lat2 - lat1
-#     dlng = lng2 - lng1
-#     a = np.sin(dlat / 2.0) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlng / 2.0) ** 2
-#     c = 2 * np.arcsin(np.sqrt(a))
-#     return EARTH_RADIUS_M * c
-
-
 def assign_buses_to_stops_df(
     buses_df: DataFrame,
     stops_df: DataFrame,
@@ -34,7 +22,7 @@ def assign_buses_to_stops_df(
     - stops_df: ['stop_id','latitude','longitude']
     - assignment_counts_df: ['stop_id','student_count']
 
-    Trả về DataFrame ['bus_id','stop_id','distance'] chỉ chọn các xe gần nhất đủ phục vụ sinh viên tại điểm.
+    Trả về DataFrame ['bus_id','stop_id'] chỉ chọn các xe gần nhất đủ phục vụ sinh viên tại điểm.
     """
     # Alias cho bus và stop
     b = buses_df.select(
@@ -83,7 +71,7 @@ def assign_buses_to_stops_df(
     # Lấy bus có rank <= buses_needed
     result = ranked.filter(col('rank') <= col('buses_needed'))
 
-    return result.select('bus_id', 'stop_id', 'distance')
+    return result.select('bus_id', 'stop_id')
 
 class UC03Job(Job):
     def run(self, **kwargs):
@@ -98,26 +86,12 @@ class UC03Job(Job):
         assignment_counts_df = spark_read_db(
             'SELECT stop_id, COUNT(student_id) AS student_count FROM assignments GROUP BY stop_id'
         )
-        assignments_raw_df = spark_read_db(
-            'SELECT student_id, stop_id FROM assignments'
-        )
 
         # Tính phân bổ bus-stop dựa trên capacity và khoảng cách
-        assign_df = assign_buses_to_stops_df(
+        bus_assignment_df = assign_buses_to_stops_df(
             buses_df,
             bus_stops_df,
             assignment_counts_df
-        )
-
-        # tạo dataframe có bus_id, stop_id, student_id, distance (tính theo haversine)
-        bus_assignment_df = assign_df.join(
-            assignments_raw_df,
-            on='stop_id', how='inner'
-        ).select(
-            col('bus_id'),
-            col('stop_id'),
-            col('student_id'),
-            col('distance')
         )
 
         bus_assignment_df.show()  # debug
