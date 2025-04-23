@@ -6,27 +6,13 @@ import geopandas as gpd
 import pandas as pd
 from pyspark.sql import Window
 from pyspark.sql.functions import col, udf, row_number, lit, rand
-from pyspark.sql.types import FloatType, StringType
+from pyspark.sql.types import FloatType, StringType, IntegerType
 from shapely.geometry import LineString, MultiLineString
 
 from batch.core import Job
 from deps.biz import get_rand_students
 from deps.s3 import s3_upload
 from deps.spark import spark_read_s3, spark_write_db, get_spark_session
-
-# Một số tuyến đường chính (tọa độ gần đúng ở Hà Nội)
-road_coords = [
-    (21.0285, 105.8542),  # Hồ Hoàn Kiếm
-    (21.0370, 105.8342),  # Kim Mã
-    (21.0039, 105.8212),  # Nguyễn Trãi
-    (21.0297, 105.7925),  # Hồ Tùng Mậu
-    (21.0409, 105.7475),  # Lê Trọng Tấn
-    (21.0242, 105.8700),  # Minh Khai
-    (21.0702, 105.7947),  # Cổ Nhuế
-    (21.0062, 105.8418),  # Giải Phóng
-    (21.0330, 105.8500),  # Tràng Thi
-    (21.0450, 105.8230),  # Xuân Thủy
-]
 
 def _seed_students():
     spark = get_spark_session()  # must declare to make udf works
@@ -124,6 +110,12 @@ def _export_students_to_csv(limit: int = 150):
             ])
 
 def _seed_buses(total_bus: int = 20):
+    # chọn ngẫu nhiên số chỗ ngồi phổ biến
+    @udf(returnType=IntegerType())
+    def rand_bus_capacity():
+        total_seats = [16,29,35,45]
+        return random.choice(total_seats)
+
     # Import danh sách các xe bus
     local_seed_filepath = f"data/hanoi_points_full.csv"
     s3_key = "hanoi_points.csv"
@@ -132,7 +124,7 @@ def _seed_buses(total_bus: int = 20):
         .orderBy(rand()) \
         .limit(total_bus) \
         .withColumn("bus_id", row_number().over(Window.orderBy(lit(1)))) \
-        .withColumn("capacity", lit(50) ) \
+        .withColumn("capacity", rand_bus_capacity() ) \
         .withColumn("longitude", col("longitude").cast(FloatType())) \
         .withColumn("latitude", col("latitude").cast(FloatType())) \
         .drop("osm_id", "osm_type", "geom_type", "name")
