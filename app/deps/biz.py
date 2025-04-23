@@ -1,5 +1,6 @@
 import json
 import os
+from typing import List, Tuple
 
 import psycopg
 from dotenv import load_dotenv
@@ -49,3 +50,28 @@ def get_students(limit: int | None) -> list[Student]:
                 Student(s[0], s[1], s[2], s[3], s[4])
                 for s in students
             ]
+
+
+def get_all_bus_stops()-> List[Tuple[str, float, float]]:
+    with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT stop_id, latitude, longitude FROM bus_stops")
+            return cur.fetchall()
+
+
+def get_all_buses() -> List[Tuple[str, float, float]]:
+    with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT bus_id, latitude, longitude, capacity FROM buses")
+            return cur.fetchall()
+
+
+def get_all_assignments():
+    with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                    SELECT student_id, stop_id
+                    FROM assignments
+                """)
+            rows = cur.fetchall()
+    return rows

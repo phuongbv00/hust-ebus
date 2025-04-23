@@ -12,14 +12,6 @@ class Assignment:
         self.pickup_time = pickup_time
 
 
-class Bus:
-    def __init__(self, bus_id: int, license_plate: str, capacity: int, current_route: str):
-        self.bus_id = bus_id
-        self.license_plate = license_plate
-        self.capacity = capacity
-        self.current_route = current_route
-
-
 class BusStop:
     def __init__(self, stop_id: int, name: str, latitude: float, longitude: float):
         self.stop_id = stop_id
@@ -115,5 +107,13 @@ class Student:
         self.student_id = student_id
         self.name = name
         self.address = address
+        self.latitude = latitude
+        self.longitude = longitude
+
+
+class Bus:
+    def __init__(self, bus_id: int, longitude: float, latitude: float, capacity: str):
+        self.bus_id = bus_id
+        self.capacity = capacity
         self.latitude = latitude
         self.longitude = longitude

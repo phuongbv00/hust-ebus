@@ -5,15 +5,14 @@ import random
 import geopandas as gpd
 import pandas as pd
 from pyspark.sql import Window
-from pyspark.sql.functions import col, udf, row_number, lit
-from pyspark.sql.types import FloatType, StringType
+from pyspark.sql.functions import col, udf, row_number, lit, rand
+from pyspark.sql.types import FloatType, StringType, IntegerType
 from shapely.geometry import LineString, MultiLineString
 
 from batch.core import Job
 from deps.biz import get_rand_students
 from deps.s3 import s3_upload
 from deps.spark import spark_read_s3, spark_write_db, get_spark_session
-
 
 def _seed_students():
     spark = get_spark_session()  # must declare to make udf works
@@ -110,11 +109,34 @@ def _export_students_to_csv(limit: int = 150):
                 student.address
             ])
 
+def _seed_buses(total_bus: int = 20):
+    # chọn ngẫu nhiên số chỗ ngồi phổ biến
+    @udf(returnType=IntegerType())
+    def rand_bus_capacity():
+        total_seats = [16,29,35,45]
+        return random.choice(total_seats)
+
+    # Import danh sách các xe bus
+    local_seed_filepath = f"data/hanoi_points_full.csv"
+    s3_key = "hanoi_points.csv"
+    s3_upload(local_seed_filepath, s3_key)
+    df = spark_read_s3(s3_key) \
+        .orderBy(rand()) \
+        .limit(total_bus) \
+        .withColumn("bus_id", row_number().over(Window.orderBy(lit(1)))) \
+        .withColumn("capacity", rand_bus_capacity() ) \
+        .withColumn("longitude", col("longitude").cast(FloatType())) \
+        .withColumn("latitude", col("latitude").cast(FloatType())) \
+        .drop("osm_id", "osm_type", "geom_type", "name")
+    spark_write_db("buses", df, "overwrite")
+
+    return
 
 class BootstrapJob(Job):
     def run(self, *args, **kwargs):
         _seed_students()
         _seed_roads()
+        _seed_buses()
         _export_students_to_csv(50)
         _export_students_to_csv(100)
         _export_students_to_csv(150)
