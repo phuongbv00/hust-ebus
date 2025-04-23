@@ -1,0 +1,13 @@
+services:
+  debezium-server:
+    image: debezium/server:2.7.3.Final
+    volumes:
+      - ./debezium/conf:/debezium/conf
+      - debezium-data:/debezium/data
+    environment:
+      - QUARKUS_PROFILE=kafka
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_NAME=${DB_NAME}
+volumes:
+  debezium-data:
