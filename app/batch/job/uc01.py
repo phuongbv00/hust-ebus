@@ -160,13 +160,13 @@ class UC01Job(Job):
             # Lưu tạm toạ độ các cụm
             cluster_centers_df = spark.createDataFrame(cluster_centers, ["latitude", "longitude"]) \
                 .withColumn("cluster_id", row_number().over(Window.orderBy(lit(1))))
-            spark_write_db("student_clusters", cluster_centers_df, "overwrite")
+            spark_write_db("student_clusters", cluster_centers_df)
 
             # Tìm điểm đường gần nhất với mỗi tâm cụm ~ bus stop
             print("[INFO] Bus stops:")
             bus_stops_df = find_bus_stops_df(spark, roads_df, cluster_centers)
             bus_stops_df.show()
-            spark_write_db("bus_stops", bus_stops_df, "overwrite")
+            spark_write_db("bus_stops", bus_stops_df)
 
             # Lưu ma trận (cluster - bus stop)
             cluster_map_bus_stop_df = bus_stops_df.select("stop_id") \
@@ -175,7 +175,7 @@ class UC01Job(Job):
                       .withColumn("__row_id", monotonically_increasing_id()),
                       on="__row_id") \
                 .drop("__row_id")
-            spark_write_db("cluster_bus_stop_map", cluster_map_bus_stop_df, "overwrite")
+            spark_write_db("cluster_bus_stop_map", cluster_map_bus_stop_df)
 
             # Lưu ma trận phân bổ (bus stop - student)
             print("[INFO] Assignments:")
@@ -187,4 +187,4 @@ class UC01Job(Job):
                 .join(students_df, on="__row_id") \
                 .drop("__row_id")
             assignments_df.show()
-            spark_write_db("assignments", assignments_df, "overwrite")
+            spark_write_db("assignments", assignments_df)

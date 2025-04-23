@@ -2,7 +2,7 @@ import json
 
 import pandas as pd
 import psycopg
-from confluent_kafka import Consumer, KafkaException
+from confluent_kafka import Consumer, KafkaException, OFFSET_END
 
 from deps.biz import DATABASE_URL
 from deps.utils import haversine_distance
@@ -47,20 +47,24 @@ def msg_process(msg_value):
 
 
 def basic_consume_loop(consumer: Consumer, topics: list[str]):
-    running = True
+    def my_assign(consumer, partitions):
+        for p in partitions:
+            p.offset = OFFSET_END
+        consumer.assign(partitions)
 
     try:
-        consumer.subscribe(topics)
+        consumer.subscribe(topics, on_assign=my_assign)
 
-        while running:
+        while True:
             msg = consumer.poll(timeout=1.0)
             if msg is None: continue
 
             if msg.error():
                 raise KafkaException(msg.error())
             else:
-                print('Received message: {}'.format(msg.value().decode('utf-8')))
-                msg_process(msg.value().decode('utf-8'))
+                msg_str = msg.value().decode("utf-8")
+                # print(f"Received message: {msg_str}")
+                msg_process(msg_str)
     finally:
         # Close down consumer to commit final offsets.
         consumer.close()
@@ -70,7 +74,7 @@ def run():
     consumer_conf = {
         'bootstrap.servers': 'localhost:29092',
         'group.id': 'pipeline-uc02-group',
-        'auto.offset.reset': 'earliest'
+        'auto.offset.reset': 'latest'
     }
     consumer = Consumer(consumer_conf)
     topics = ['pgserver.public.students']
