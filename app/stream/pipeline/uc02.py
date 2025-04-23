@@ -1,9 +1,8 @@
 import json
-import sys
 
 import pandas as pd
 import psycopg
-from confluent_kafka import Consumer, KafkaError, KafkaException
+from confluent_kafka import Consumer, KafkaException
 
 from deps.biz import DATABASE_URL
 from deps.utils import haversine_distance
