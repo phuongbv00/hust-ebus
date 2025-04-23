@@ -1,81 +1,78 @@
-from pyspark.sql.functions import from_json, col
-from pyspark.sql.functions import radians, cos, sin, asin, sqrt, row_number
-from pyspark.sql.types import StructType, StructField, StringType, FloatType, IntegerType
-from pyspark.sql.window import Window
+import json
+import sys
 
-from deps.spark import get_spark_session, spark_read_db, spark_write_db
+import pandas as pd
+import psycopg
+from confluent_kafka import Consumer, KafkaError, KafkaException
+
+from deps.biz import DATABASE_URL
+from deps.utils import haversine_distance
+
+
+def msg_process(msg_value):
+    payload = json.loads(msg_value).get("payload")
+    if not payload or not payload.get("after"):
+        return
+
+    student = payload["after"]
+    lat_s = student["latitude"]
+    lon_s = student["longitude"]
+    student_id = student["student_id"]
+
+    with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+            # Query all bus stops
+            cur.execute("SELECT stop_id, latitude, longitude FROM bus_stops")
+            stops = cur.fetchall()
+
+            df_stops = pd.DataFrame(stops, columns=["stop_id", "latitude", "longitude"])
+            # Compute haversine distances to all stops
+            df_stops["distance"] = df_stops.apply(
+                lambda row: haversine_distance(lat_s, lon_s, row["latitude"], row["longitude"]),
+                axis=1
+            )
+
+            # Find the stop with the minimum distance
+            nearest_row = df_stops.loc[df_stops["distance"].idxmin()]
+            nearest_stop = nearest_row["stop_id"]
+            min_distance = nearest_row["distance"]
+
+            # Update assignments table
+            cur.execute("""
+                INSERT INTO assignments (stop_id, student_id)
+                VALUES (%s, %s)
+                ON CONFLICT (student_id) DO UPDATE SET stop_id = EXCLUDED.stop_id
+            """, (nearest_stop, student_id))
+            conn.commit()
+            print(f"UC02: Assigned student {student_id} to stop {nearest_stop} (distance: {min_distance:.2f} km)")
+
+
+def basic_consume_loop(consumer: Consumer, topics: list[str]):
+    running = True
+
+    try:
+        consumer.subscribe(topics)
+
+        while running:
+            msg = consumer.poll(timeout=1.0)
+            if msg is None: continue
+
+            if msg.error():
+                raise KafkaException(msg.error())
+            else:
+                print('Received message: {}'.format(msg.value().decode('utf-8')))
+                msg_process(msg.value().decode('utf-8'))
+    finally:
+        # Close down consumer to commit final offsets.
+        consumer.close()
 
 
 def run():
-    spark = get_spark_session()
-
-    # Kafka configuration
-    kafka_bootstrap_servers = "kafka:9092"
-    kafka_topic = "pgserver.public.students"
-
-    # Define schema for 'before' and 'after'
-    student_schema = StructType([
-        StructField("address", StringType(), True),
-        StructField("longitude", FloatType(), True),
-        StructField("latitude", FloatType(), True),
-        StructField("student_id", IntegerType(), False),
-        StructField("name", StringType(), True)
-    ])
-
-    # Define the full schema
-    payload_schema = StructType([
-        StructField("before", student_schema, True),
-        StructField("after", student_schema, True),
-    ])
-
-    message_schema = StructType([
-        StructField("payload", payload_schema, True)
-    ])
-
-    # Read from Kafka
-    df_kafka = spark.readStream \
-        .format("kafka") \
-        .option("kafka.bootstrap.servers", kafka_bootstrap_servers) \
-        .option("subscribe", kafka_topic) \
-        .option("startingOffsets", "latest") \
-        .load()
-
-    # Convert the binary value to string and parse JSON
-    df_parsed = df_kafka.selectExpr("CAST(value AS STRING)") \
-        .withColumn("data", from_json(col("value"), message_schema)) \
-        .select("data.payload.*")
-
-    # Example: Select fields from 'after' part
-    df_new_student = df_parsed.select(
-        col("after.student_id").alias("student_id"),
-        col("after.latitude").alias("student_latitude"),
-        col("after.longitude").alias("student_longitude"),
-    )
-
-    # Load static bus_stops table
-    bus_stops_df = spark_read_db("select * from bus_stops")
-
-    # Cross join each student with all bus stops
-    enriched_df = df_new_student.crossJoin(bus_stops_df)
-
-    # Haversine formula to calculate distance between student and bus stop
-    R = 6371.0  # Radius of Earth in kilometers
-
-    enriched_df = enriched_df.withColumn("distance", R * 2 * asin(sqrt(
-        sin((radians(col("student_latitude")) - radians(col("latitude"))) / 2) ** 2 +
-        cos(radians(col("student_latitude"))) * cos(radians(col("latitude"))) *
-        sin((radians(col("student_longitude")) - radians(col("longitude"))) / 2) ** 2
-    )))
-
-    # Select the closest stop per student
-    window_spec = Window.partitionBy("student_id").orderBy(col("distance"))
-    nearest_stop_df = enriched_df.withColumn("rank", row_number().over(window_spec)) \
-        .filter(col("rank") == 1) \
-        .select(col("student_id"), col("stop_id"))
-
-    # Write to assignments table (updating with nearest stop_id per student)
-    query = nearest_stop_df.writeStream \
-        .foreachBatch(lambda batch_df: spark_write_db("assignments_v2", batch_df, "overwrite")) \
-        .start()
-
-    query.awaitTermination()
+    consumer_conf = {
+        'bootstrap.servers': 'localhost:29092',
+        'group.id': 'pipeline-uc02-group',
+        'auto.offset.reset': 'earliest'
+    }
+    consumer = Consumer(consumer_conf)
+    topics = ['pgserver.public.students']
+    basic_consume_loop(consumer, topics)

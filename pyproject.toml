@@ -16,5 +16,6 @@ dependencies = [
     "scikit-learn>=1.6.1",
     "setuptools>=78.1.0",
     "uvicorn>=0.34.0",
-    "python-multipart>=0.0.20"
+    "python-multipart>=0.0.20",
+    "confluent-kafka>=2.10.0",
 ]
