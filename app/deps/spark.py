@@ -1,18 +1,20 @@
 import os
 
+from dotenv import load_dotenv
 from pyspark.sql import SparkSession, DataFrame
+
+load_dotenv()
+
+JDBC_URL = f"jdbc:postgresql://{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
+DB_USER = os.getenv('DB_USER')
+DB_PASS = os.getenv('DB_PASS')
+DB_DRIVER = "org.postgresql.Driver"
 
 
 def get_spark_session():
     return (SparkSession.builder
             .remote("sc://localhost")  # TODO
             .getOrCreate())
-
-
-JDBC_URL = f"jdbc:postgresql://{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
-DB_USER = os.getenv('DB_USER')
-DB_PASS = os.getenv('DB_PASS')
-DB_DRIVER = "org.postgresql.Driver"
 
 
 def spark_write_db(table: str, df: DataFrame, mode: str = "append"):

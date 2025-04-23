@@ -35,7 +35,7 @@ services:
       - "--master"
       - "spark://spark-master:7077"
       - "--packages"
-      - "org.apache.spark:spark-connect_2.12:3.5.5"
+      - "org.apache.spark:spark-connect_2.12:3.5.5,org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.5"
       - "--driver-class-path"
       - "postgresql-42.7.5.jar"
       - "--jars"
