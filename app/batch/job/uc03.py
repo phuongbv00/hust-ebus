@@ -1,41 +1,18 @@
-import math
-from batch.core import Job
-from deps.spark import get_spark_session, spark_write_db
-from pyspark.sql.types import StructType, StructField, StringType, DoubleType, FloatType, IntegerType
 from collections import defaultdict
-from deps.biz import get_all_bus_stops, get_all_buses, get_all_assignments
-from typing import List, Tuple
+
 import pandas as pd
 
-# Bán kính Trái Đất (đơn vị: mét)
-EARTH_RADIUS_M = 6_371_000
+from batch.core import Job
+from deps.biz import get_all_bus_stops, get_all_buses, get_all_assignments
+from deps.spark import get_spark_session, spark_write_db
+from deps.utils import haversine_distance
 
-def haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    """
-    Tính khoảng cách giữa hai điểm trên Trái Đất bằng công thức Haversine.
-
-    Parameters:
-    - lat1, lon1: vĩ độ và kinh độ của điểm 1
-    - lat2, lon2: vĩ độ và kinh độ của điểm 2
-
-    Returns:
-    - distance: khoảng cách giữa hai điểm (mét)
-    """
-    phi1 = math.radians(lat1)
-    phi2 = math.radians(lat2)
-    delta_phi = math.radians(lat2 - lat1)
-    delta_lambda = math.radians(lon2 - lon1)
-
-    a = math.sin(delta_phi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(delta_lambda / 2) ** 2
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-
-    return EARTH_RADIUS_M * c
 
 def assign_stops_with_capacity(
-    stops: List[Tuple[str, float, float]],
-    buses: List[Tuple[str, float, float, int]],
-    assignments: List[Tuple[str, str]]
-) -> List[Tuple[str, str, float, int]]:
+    stops: list[tuple[str, float, float]],
+    buses: list[tuple[str, float, float, int]],
+    assignments: list[tuple[str, str]]
+) -> list[tuple[str, str, float, int]]:
     """
     Phân bổ xe buýt cho từng điểm dừng sao cho:
     - Khoảng cách là gần nhất
@@ -56,7 +33,7 @@ def assign_stops_with_capacity(
     distances = []
     for stop_id, slat, slon in stops:
         for bus_id, blat, blon, _ in buses:
-            d = haversine(slat, slon, blat, blon)
+            d = haversine_distance(slat, slon, blat, blon)
             distances.append((d, stop_id, bus_id))
 
     # Sắp xếp danh sách theo khoảng cách tăng dần
@@ -91,6 +68,7 @@ def assign_stops_with_capacity(
 
     return result
 
+
 def get_bus_stop_assignments():
     """
     Lấy dữ liệu từ database, tính toán phân bổ, và ghi kết quả lại vào Spark DataFrame.
@@ -113,7 +91,7 @@ def get_bus_stop_assignments():
     spark_write_db('bus_assignment', spark_df, 'overwrite')
     return spark_df
 
-# ---------------- Job class để Spark Scheduler chạy ----------------
+
 class UC03Job(Job):
     def run(self, **kwargs):
         df = get_bus_stop_assignments()
