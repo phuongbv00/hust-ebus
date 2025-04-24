@@ -83,6 +83,14 @@ CREATE_TABLE_STATEMENTS = [
         num_students BIGINT
     );
     """,
+    """
+    CREATE TABLE IF NOT EXISTS public.student_locations (
+        student_id  INT NOT NULL,
+        latitude    DOUBLE PRECISION,
+        longitude   DOUBLE PRECISION,
+        timestamp   TIMESTAMP WITH TIME ZONE NOT NULL
+    );
+    """,
 ]
 
 DROP_TABLE_STATEMENTS = [
@@ -95,6 +103,7 @@ DROP_TABLE_STATEMENTS = [
     "DROP TABLE IF EXISTS public.students;",
     "DROP TABLE IF EXISTS public.buses;",
     "DROP TABLE IF EXISTS public.bus_assignments;",
+    "DROP TABLE IF EXISTS public.student_locations;",
 ]
 
 
