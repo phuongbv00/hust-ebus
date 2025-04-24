@@ -57,13 +57,13 @@ export default function Map() {
                 const rs = await Promise.all([
                     fetch(BASE_URL + "/assignments").then(res => res.json()),
                     fetch(BASE_URL + "/bus-stops").then(res => res.json()),
-                    fetch(BASE_URL + "/roads/hanoi").then(res => res.json()),
+                    // fetch(BASE_URL + "/roads/hanoi").then(res => res.json()),
                     fetch(BASE_URL + "/student-clusters").then(res => res.json()),
                 ])
                 setAssignments(rs[0])
                 setBusStops(rs[1])
-                setRoadsGeoJSON(rs[2])
-                setStudentClusters(rs[3])
+                // setRoadsGeoJSON(rs[2])
+                setStudentClusters(rs[2])
                 setError(null)
             } catch (error) {
                 console.error("Error loading points data:", error)
