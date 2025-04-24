@@ -26,6 +26,7 @@ def spark_write_db(table: str, df: DataFrame, mode: str = "append"):
             "user": DB_USER,
             "password": DB_PASS,
             "driver": DB_DRIVER,
+            "truncate": True,
         }
     )
 

@@ -75,6 +75,14 @@ CREATE_TABLE_STATEMENTS = [
         capacity  INTEGER
     );
     """,
+    """
+    CREATE TABLE IF NOT EXISTS public.bus_assignments (
+        bus_id       BIGINT PRIMARY KEY,
+        stop_id      BIGINT,
+        distance     DOUBLE PRECISION,
+        num_students BIGINT
+    );
+    """,
 ]
 
 DROP_TABLE_STATEMENTS = [
@@ -86,6 +94,7 @@ DROP_TABLE_STATEMENTS = [
     "DROP TABLE IF EXISTS public.roads;",
     "DROP TABLE IF EXISTS public.students;",
     "DROP TABLE IF EXISTS public.buses;",
+    "DROP TABLE IF EXISTS public.bus_assignments;",
 ]
 
 

@@ -43,7 +43,7 @@ def msg_process(msg_value):
                 ON CONFLICT (student_id) DO UPDATE SET stop_id = EXCLUDED.stop_id
             """, (nearest_stop, student_id))
             conn.commit()
-            print(f"UC02: Assigned student {student_id} to stop {nearest_stop} (distance: {min_distance:.2f} km)")
+            print(f"UC02: Assigned student {student_id} to stop {nearest_stop} (distance: {min_distance:.2f}m)")
 
 
 def basic_consume_loop(consumer: Consumer, topics: list[str]):

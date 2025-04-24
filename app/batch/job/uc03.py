@@ -87,8 +87,8 @@ def get_bus_stop_assignments():
     df = pd.DataFrame(records, columns=["bus_id", "stop_id", "distance", "num_students"])
     spark_df = spark.createDataFrame(df)
 
-    # Ghi kết quả vào bảng 'bus_assignment'
-    spark_write_db('bus_assignment', spark_df, 'overwrite')
+    # Ghi kết quả vào bảng bus_assignments
+    spark_write_db("bus_assignments", spark_df, "overwrite")
     return spark_df
 
 
