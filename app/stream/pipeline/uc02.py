@@ -64,6 +64,7 @@ def msg_process(msg_value):
 
 
 def run():
+    print("UC02: Running...")
     consumer_conf = {
         'bootstrap.servers': BOOTSTRAP_SERVERS,
         'group.id': 'pipeline-uc02-group',
