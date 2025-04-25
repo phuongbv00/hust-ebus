@@ -4,6 +4,8 @@ import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import JobTriggerForm from "@/components/job-trigger-form";
 import {Card} from "@/components/ui/card";
+import {MapContext, MapProvider, Point} from "@/context/map-context";
+import SearchItemComponent from "@/components/search-item-component";
 
 interface LayoutProps {
     children: ReactNode;
@@ -12,48 +14,50 @@ interface LayoutProps {
 const Layout = ({children}: LayoutProps) => {
     const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
     return (
-        <div className="flex min-h-screen">
-            {/* Sidebar */}
-            <aside
-                className={`bg-gray-50 text-gray-800 transition-all duration-300 relative overflow-y-auto max-h-screen ${
-                    sidebarOpen ? "w-80 p-4" : "w-0 p-0 overflow-hidden"
-                }`}
-            >
-                {sidebarOpen && (
-                    <>
-                        {/* Close Button */}
+        <MapProvider>
+            <div className="flex min-h-screen">
+                {/* Sidebar */}
+                <aside
+                    className={`bg-gray-50 text-gray-800 transition-all duration-300 relative overflow-y-auto max-h-screen ${
+                        sidebarOpen ? "w-80 p-4" : "w-0 p-0 overflow-hidden"
+                    }`}
+                >
+                    {sidebarOpen && (
+                        <>
+                            {/* Close Button */}
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setSidebarOpen(false)}
+                                className="absolute top-4 right-4 text-gray-800"
+                            >
+                                <X size={28}/>
+                            </Button>
+
+                            <h2 className="text-xl font-bold mb-6">Hệ thống gợi ý<br/>điểm đón trả xe bus</h2>
+
+                            <SearchItemComponent/>
+                            <JobTriggerForm className="mt-4"/>
+                        </>
+                    )}
+                </aside>
+
+                {/* Main Content */}
+                <div className="flex-1 bg-white">
+                    {!sidebarOpen && (
                         <Button
-                            variant="ghost"
                             size="icon"
-                            onClick={() => setSidebarOpen(false)}
-                            className="absolute top-4 right-4 text-gray-800"
+                            onClick={() => setSidebarOpen(true)}
+                            className="absolute top-3 start-3 z-[1000]"
                         >
-                            <X size={28}/>
+                            <Menu size={34}/>
                         </Button>
+                    )}
 
-                        <h2 className="text-xl font-bold mb-6">Hệ thống gợi ý<br/>điểm đón trả xe bus</h2>
-
-                        <SearchItemComponent />
-                        <JobTriggerForm className="mt-4"/>
-                    </>
-                )}
-            </aside>
-
-            {/* Main Content */}
-            <div className="flex-1 bg-white">
-                {!sidebarOpen && (
-                    <Button
-                        size="icon"
-                        onClick={() => setSidebarOpen(true)}
-                        className="absolute top-3 start-3 z-[1000]"
-                    >
-                        <Menu size={34}/>
-                    </Button>
-                )}
-
-                {children}
+                    {children}
+                </div>
             </div>
-        </div>
+        </MapProvider>
     );
 };
 

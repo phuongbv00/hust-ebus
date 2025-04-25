@@ -1,10 +1,11 @@
 "use client"
 
-import {useEffect, useRef, useState} from "react"
+import {useContext, useEffect, useRef, useState} from "react"
 import {CircleMarker, GeoJSON, LayerGroup, MapContainer, Popup, TileLayer, useMap, ZoomControl} from "react-leaflet"
 import "leaflet/dist/leaflet.css"
 import {Card} from "@/components/ui/card";
 import {Checkbox} from "@/components/ui/checkbox"
+import {MapContext} from "@/context/map-context";
 
 type Point = {
     latitude: number
@@ -26,6 +27,11 @@ type StudentCluster = Point & {
     cluster_id: number
 }
 
+type Buses = Point & {
+    bus_id: number
+    capacity: number
+}
+
 // Map center to specified location
 const defaultCenter = {lat: 21.018812412744, lng: 105.83191103813589}
 
@@ -41,6 +47,7 @@ export default function Map() {
     const [busStops, setBusStops] = useState<BusStop[]>([])
     const [roadsGeoJSON, setRoadsGeoJSON] = useState<any>([])
     const [studentClusters, setStudentClusters] = useState<StudentCluster[]>([])
+    const [buses, setBuses] = useState<Buses[]>([])
     const [activePoint, setActivePoint] = useState<Point | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -48,6 +55,8 @@ export default function Map() {
     const [showAssignments, setShowAssignments] = useState(true)
     const [showStudentClusters, setShowStudentClusters] = useState(true)
     const [showBusStops, setShowBusStops] = useState(true)
+    const [showBuses, setShowBuses] = useState(true)
+    const { setMapData, mapCenter, highlightPoint } = useContext(MapContext);
 
     // Fetch points data from JSON files
     useEffect(() => {
@@ -57,13 +66,21 @@ export default function Map() {
                 const rs = await Promise.all([
                     fetch(BASE_URL + "/assignments").then(res => res.json()),
                     fetch(BASE_URL + "/bus-stops").then(res => res.json()),
-                    // fetch(BASE_URL + "/roads/hanoi").then(res => res.json()),
+                    fetch(BASE_URL + "/roads/hanoi").then(res => res.json()),
                     fetch(BASE_URL + "/student-clusters").then(res => res.json()),
+                    fetch(BASE_URL + "/buses").then(res => res.json()),
                 ])
                 setAssignments(rs[0])
                 setBusStops(rs[1])
-                // setRoadsGeoJSON(rs[2])
-                setStudentClusters(rs[2])
+                setRoadsGeoJSON(rs[2])
+                setStudentClusters(rs[3])
+                setBuses(rs[4])
+                const mapData = {
+                    assignments: rs[0],
+                    busStops: rs[1],
+                    buses: rs[4],
+                }
+                setMapData(mapData)
                 setError(null)
             } catch (error) {
                 console.error("Error loading points data:", error)
@@ -135,6 +152,18 @@ export default function Map() {
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     >
                         Bus Stops ({busStops.length})
+                    </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                    <Checkbox id="chk-4"
+                              className="data-[state=checked]:bg-yellow-300 data-[state=checked]:border-yellow-300"
+                              checked={showBuses}
+                              onCheckedChange={setShowBuses}/>
+                    <label
+                        htmlFor="chk-4"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                        Bus ({buses.length})
                     </label>
                 </div>
             </Card>
@@ -219,10 +248,40 @@ export default function Map() {
                     </LayerGroup>
                 ) : ''}
 
+                {/* Bus layer with circles */}
+                {showBusStops ? (
+                    <LayerGroup>
+                        {buses.map((point) => (
+                            <div key={point.bus_id}>
+                                {/* Small circle marker - rendered on top */}
+                                <CircleMarker
+                                    center={[point.latitude, point.longitude]}
+                                    radius={6}
+                                    pathOptions={{color: "#FFFF00", fillColor: "#FFFF00", fillOpacity: 0.8}}
+                                    eventHandlers={{
+                                        click: () => centerOnPoint(point),
+                                    }}
+                                >
+                                    <Popup>{renderPopupContent(point)}</Popup>
+                                </CircleMarker>
+                            </div>
+                        ))}
+                    </LayerGroup>
+                ) : ''}
 
                 {/* Set view to active point if selected */}
                 {activePoint && <SetViewOnClick
                     coords={{lat: activePoint.latitude, lng: activePoint.longitude}}/>}
+                {mapCenter && <SetViewOnClick coords={mapCenter} />}
+                {highlightPoint && (
+                    <CircleMarker
+                        center={[highlightPoint.latitude, highlightPoint.longitude]}
+                        radius={10}
+                        pathOptions={{ color: "#7F00FF", fillColor: "#7F00FF", fillOpacity: 1 }}
+                    >
+                        <Popup>Đã chọn: {highlightPoint.name || highlightPoint.stop_id || highlightPoint.bus_id}</Popup>
+                    </CircleMarker>
+                )}
 
                 <ZoomControl position="bottomright"/>
             </MapContainer>
