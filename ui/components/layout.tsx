@@ -7,6 +7,8 @@ import {Card} from "@/components/ui/card";
 import {MapContext, MapProvider, Point} from "@/context/map-context";
 import SearchItemComponent from "@/components/search-item-component";
 
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+
 interface LayoutProps {
     children: ReactNode;
 }
@@ -36,8 +38,21 @@ const Layout = ({children}: LayoutProps) => {
 
                             <h2 className="text-xl font-bold mb-6">Hệ thống gợi ý<br/>điểm đón trả xe bus</h2>
 
-                            <SearchItemComponent/>
-                            <JobTriggerForm className="mt-4"/>
+                            <Tabs defaultValue="search"  className="w-full">
+                                <TabsList className="grid w-full grid-cols-2">
+                                    <TabsTrigger value="search">Tìm kiếm</TabsTrigger>
+                                    <TabsTrigger value="job">Job</TabsTrigger>
+                                </TabsList>
+
+                                <div className="flex-1">
+                                    <TabsContent value="search">
+                                        <SearchItemComponent />
+                                    </TabsContent>
+                                    <TabsContent value="job">
+                                        <JobTriggerForm />
+                                    </TabsContent>
+                                </div>
+                            </Tabs>
                         </>
                     )}
                 </aside>
