@@ -62,6 +62,22 @@ def get_bus_stops():
                 for b in bus_stops
             ]
 
+@app.get("/buses")
+def get_bus_stops():
+    with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT bus_id, capacity, latitude, longitude FROM buses")
+            buses = cur.fetchall()
+            return [
+                {
+                    "bus_id": b[0],
+                    "capacity": b[1],
+                    "latitude": b[2],
+                    "longitude": b[3],
+                }
+                for b in buses
+            ]
+
 
 @app.get("/roads/hanoi")
 def get_roads():
@@ -118,7 +134,6 @@ def get_student_clusters():
                 }
                 for b in clusters
             ]
-
 
 # Entry point for local development
 if __name__ == "__main__":
