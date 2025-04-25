@@ -13,7 +13,15 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Pagination } from "@/components/ui/pagination";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination"
 
 
 export default function SearchItemComponent() {
@@ -34,8 +42,26 @@ export default function SearchItemComponent() {
                 ? mapData?.busStops || []
                 : mapData?.buses || [];
 
-    const paginated = dataset.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
+    const paginated = dataset.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+    const totalPages = Math.ceil(dataset.length / itemsPerPage);
+
+    // Tính dãy trang cần hiển thị
+    const renderPages = () => {
+        if (totalPages <= 5) {
+            return Array.from({ length: totalPages }, (_, i) => i + 1);
+        }
+        // >5: 1,2,3,..., last-2,last-1,last
+        return [
+            1, 2, 3,
+            -1,                       // biểu thị dấu ellipsis
+            totalPages - 2,
+            totalPages - 1,
+            totalPages
+        ];
+    };
+
+    const pagesToShow = renderPages();
     const handleSearch = () => {
         if (!mapData) return;
         const dataset =
@@ -69,6 +95,18 @@ export default function SearchItemComponent() {
         }
     };
 
+    const handleReassign = async () => {
+        const BASE_URL = "http://localhost:8002"
+        try {
+            const rs = await fetch(BASE_URL + "/reassign-student-locations", {
+                method: "POST",
+            }).then(res => res.json());
+            console.log(rs)
+
+        } catch (error) {
+            console.error("Error loading points data:", error)
+        }
+    }
 
     return (
         <Card className="p-4 gap-2">
@@ -104,14 +142,13 @@ export default function SearchItemComponent() {
                 />
             </div>
             <Button onClick={handleSearch}>Tìm kiếm</Button>
+            <Button onClick={handleReassign}>Tái phân bổ</Button>
             <Dialog open={openDialog} onOpenChange={setOpenDialog}>
                 <DialogTrigger asChild>
-                    <Button variant="outline">Xem danh sách các điểm</Button>
+                    <Button variant="outline">Xem danh sách các đối tượng</Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-3xl z-99999">
-                    <DialogHeader>
-                        <DialogTitle>Danh sách {type}</DialogTitle>
-                    </DialogHeader>
+                    <DialogHeader><DialogTitle>Danh sách {type}</DialogTitle></DialogHeader>
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -119,28 +156,50 @@ export default function SearchItemComponent() {
                                 {type === "student" && <TableHead>Tên</TableHead>}
                                 <TableHead>Latitude</TableHead>
                                 <TableHead>Longitude</TableHead>
+                                <TableHead>Hành động</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {paginated.map((item, idx) => (
                                 <TableRow key={idx}>
-                                    <TableCell>
-                                        {item.stop_id || item.student_id || item.bus_id}
-                                    </TableCell>
+                                    <TableCell>{item.stop_id || item.student_id || item.bus_id}</TableCell>
                                     {type === "student" && <TableCell>{item.name}</TableCell>}
                                     <TableCell>{item.latitude}</TableCell>
                                     <TableCell>{item.longitude}</TableCell>
+                                    <TableCell>
+                                        <Button size="sm" className="cursor-pointer" onClick={() => {
+                                            handleMoveToPoint(item)
+                                            setOpenDialog(false)
+                                        }}>
+                                            Bản đồ
+                                        </Button>
+                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
                     </Table>
                     <div className="flex justify-end pt-4">
-                        <Pagination
-                            page={page}
-                            total={dataset.length}
-                            pageSize={itemsPerPage}
-                            onChange={(p) => setPage(p)}
-                        />
+                        <Pagination>
+                            <PaginationContent>
+                                <PaginationItem>
+                                    <PaginationPrevious onClick={() => setPage((p) => Math.max(1, p - 1))} />
+                                </PaginationItem>
+                                {pagesToShow.map((p, idx) => (
+                                    p === -1 ? (
+                                        <PaginationItem key={`ellipsis-${idx}`}><PaginationEllipsis /></PaginationItem>
+                                    ) : (
+                                        <PaginationItem key={p}>
+                                            <PaginationLink href="#" isActive={p === page} onClick={(e) => { e.preventDefault(); setPage(p); }}>
+                                                {p}
+                                            </PaginationLink>
+                                        </PaginationItem>
+                                    )
+                                ))}
+                                <PaginationItem>
+                                    <PaginationNext onClick={() => setPage((p) => Math.min(totalPages, p + 1))} />
+                                </PaginationItem>
+                            </PaginationContent>
+                        </Pagination>
                     </div>
                 </DialogContent>
             </Dialog>

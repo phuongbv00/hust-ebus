@@ -56,41 +56,44 @@ export default function Map() {
     const [showStudentClusters, setShowStudentClusters] = useState(true)
     const [showBusStops, setShowBusStops] = useState(true)
     const [showBuses, setShowBuses] = useState(true)
+    const [showHighlightPoint, setShowHighlightPoint] = useState(true)
     const { setMapData, mapCenter, highlightPoint } = useContext(MapContext);
+    const pollInterval = 10_000;
+    const fetchData = async () => {
+        const BASE_URL = "http://localhost:8002"
+        try {
+            const rs = await Promise.all([
+                fetch(BASE_URL + "/assignments").then(res => res.json()),
+                fetch(BASE_URL + "/bus-stops").then(res => res.json()),
+                // fetch(BASE_URL + "/roads/hanoi").then(res => res.json()),
+                fetch(BASE_URL + "/student-clusters").then(res => res.json()),
+                fetch(BASE_URL + "/buses").then(res => res.json()),
+            ])
+            setAssignments(rs[0])
+            setBusStops(rs[1])
+            // setRoadsGeoJSON(rs[2])
+            setStudentClusters(rs[2])
+            setBuses(rs[3])
+            const mapData = {
+                assignments: rs[0],
+                busStops: rs[1],
+                buses: rs[3],
+            }
+            setMapData(mapData)
+            setError(null)
+        } catch (error) {
+            console.error("Error loading points data:", error)
+            setError("Failed to load points data. Please try again later.")
+        } finally {
+            setLoading(false)
+        }
+    }
 
     // Fetch points data from JSON files
     useEffect(() => {
-        async function fetchData() {
-            const BASE_URL = "http://localhost:8002"
-            try {
-                const rs = await Promise.all([
-                    fetch(BASE_URL + "/assignments").then(res => res.json()),
-                    fetch(BASE_URL + "/bus-stops").then(res => res.json()),
-                    fetch(BASE_URL + "/roads/hanoi").then(res => res.json()),
-                    fetch(BASE_URL + "/student-clusters").then(res => res.json()),
-                    fetch(BASE_URL + "/buses").then(res => res.json()),
-                ])
-                setAssignments(rs[0])
-                setBusStops(rs[1])
-                setRoadsGeoJSON(rs[2])
-                setStudentClusters(rs[3])
-                setBuses(rs[4])
-                const mapData = {
-                    assignments: rs[0],
-                    busStops: rs[1],
-                    buses: rs[4],
-                }
-                setMapData(mapData)
-                setError(null)
-            } catch (error) {
-                console.error("Error loading points data:", error)
-                setError("Failed to load points data. Please try again later.")
-            } finally {
-                setLoading(false)
-            }
-        }
-
         fetchData()
+        const id = setInterval(fetchData, pollInterval);
+        return () => clearInterval(id);
     }, [])
 
     // Function to center the map on a specific point
@@ -127,7 +130,7 @@ export default function Map() {
                         htmlFor="chk-1"
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     >
-                        Students ({assignments.length})
+                        Student ({assignments.length})
                     </label>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -139,7 +142,7 @@ export default function Map() {
                         htmlFor="chk-2"
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     >
-                        Clusters ({studentClusters.length})
+                        Cluster ({studentClusters.length})
                     </label>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -151,7 +154,7 @@ export default function Map() {
                         htmlFor="chk-3"
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     >
-                        Bus Stops ({busStops.length})
+                        Bus Stop ({busStops.length})
                     </label>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -164,6 +167,18 @@ export default function Map() {
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     >
                         Bus ({buses.length})
+                    </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                    <Checkbox id="chk-5"
+                              className="data-[state=checked]:bg-violet-700 data-[state=checked]:border-violet-700"
+                              checked={showHighlightPoint}
+                              onCheckedChange={setShowHighlightPoint}/>
+                    <label
+                        htmlFor="chk-5"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                        Current point
                     </label>
                 </div>
             </Card>
@@ -273,7 +288,7 @@ export default function Map() {
                 {activePoint && <SetViewOnClick
                     coords={{lat: activePoint.latitude, lng: activePoint.longitude}}/>}
                 {mapCenter && <SetViewOnClick coords={mapCenter} />}
-                {highlightPoint && (
+                {showHighlightPoint && highlightPoint && (
                     <CircleMarker
                         center={[highlightPoint.latitude, highlightPoint.longitude]}
                         radius={10}

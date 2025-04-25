@@ -1,7 +1,7 @@
 import csv
 import io
 import os
-
+import random
 import psycopg
 import uvicorn
 from dotenv import load_dotenv
@@ -9,7 +9,7 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from deps.biz import get_hanoi_roads_geojson, DATABASE_URL
-
+from typing import List, Dict
 # Load environment variables from .env
 load_dotenv()
 
@@ -23,6 +23,18 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
+def read_hanoi_points(path: str) -> List[Dict[str, str]]:
+    """Đọc file CSV hanoi_points_full và trả về list các dict."""
+    points = []
+    with open(path, newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            points.append({
+                "address": row["name"],
+                "longitude": float(row["longitude"]),
+                "latitude": float(row["latitude"]),
+            })
+    return points
 
 @app.get("/assignments")
 def get_assignments():
@@ -134,6 +146,76 @@ def get_student_clusters():
                 }
                 for b in clusters
             ]
+
+@app.post("/reassign-student-locations")
+def reassign_student_locations():
+    """
+    Lấy ngẫu nhiên các điểm trong hanoi_points_full.csv để gán lại
+    longitude/latitude cho tất cả sinh viên, và trả về danh sách sinh viên.
+    """
+    # 1. Đọc toàn bộ điểm
+    csv_path = "data/hanoi_points_full.csv"
+    if not os.path.exists(csv_path):
+        raise HTTPException(status_code=500, detail="Không tìm thấy file hanoi_points_full.csv")
+
+    points = read_hanoi_points(csv_path)
+    if not points:
+        raise HTTPException(status_code=500, detail="File hanoi_points_full.csv trống")
+
+    try:
+        # 1) Lấy danh sách student_id
+        with psycopg.connect(DATABASE_URL) as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT student_id FROM students ORDER BY student_id")
+                student_ids = [row[0] for row in cur.fetchall()]
+
+        n = len(student_ids)
+        if n == 0:
+            return {"message": "Không có sinh viên nào để cập nhật", "students": []}
+
+        # 2) Lấy ngẫu nhiên N điểm (có thể lặp lại nếu points < n)
+        chosen = random.choices(points, k=n)
+
+        # 3) Cập nhật từng sinh viên
+        with psycopg.connect(DATABASE_URL) as conn:
+            with conn.cursor() as cur:
+                for sid, pt in zip(student_ids, chosen):
+                    cur.execute(
+                        """
+                        UPDATE students
+                        SET address   = %s,
+                            longitude = %s,
+                            latitude  = %s
+                        WHERE student_id = %s
+                        """,
+                        (pt["address"], pt["longitude"], pt["latitude"], sid)
+                    )
+                conn.commit()
+
+        # 4) Trả về danh sách sau cập nhật
+        with psycopg.connect(DATABASE_URL) as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                        SELECT student_id, name, address, latitude, longitude
+                        FROM students
+                        ORDER BY student_id
+                    """)
+                rows = cur.fetchall()
+                students = [
+                    {
+                        "student_id": r[0],
+                        "name": r[1],
+                        "address": r[2],
+                        "latitude": r[3],
+                        "longitude": r[4],
+                    }
+                    for r in rows
+                ]
+
+        return {"students": students}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi khi cập nhật: {e}")
 
 # Entry point for local development
 if __name__ == "__main__":

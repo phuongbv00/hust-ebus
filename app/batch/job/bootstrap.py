@@ -249,7 +249,7 @@ class BootstrapJob(Job):
         _create_all_tables()
         _seed_students()
         _seed_roads()
-        _seed_buses()
+        _seed_buses(300)
         _export_students_to_csv(50)
         _export_students_to_csv(100)
         _export_students_to_csv(150)
