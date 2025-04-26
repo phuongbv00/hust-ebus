@@ -228,7 +228,7 @@ export default function SearchItemComponent() {
                         <span><strong>Mã xe bus: </strong>{result.bus_id}</span>
                         {result.stop_id && <>
                             <span><strong>Mã điểm dừng: </strong>{result.stop_id}</span>
-                            <span><strong>Khoảng cách xe đến điểm dừng: </strong>{Math.ceil(result.distance)} km</span>
+                            <span><strong>Khoảng cách xe đến điểm dừng: </strong>{Math.ceil(result.distance)} m</span>
                             <span><strong>Số sinh viên trên xe: </strong>{result.num_students}</span>
                         </>
                         }

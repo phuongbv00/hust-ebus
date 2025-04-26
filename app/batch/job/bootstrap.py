@@ -123,7 +123,7 @@ def _drop_all_tables():
         conn.commit()
 
 
-def _seed_students():
+def _seed_students(total_student: int = 1000):
     spark = get_spark_session()  # must declare to make udf works
 
     @udf(returnType=StringType())
@@ -140,6 +140,7 @@ def _seed_students():
     s3_key = "hanoi_points.csv"
     s3_upload(local_seed_filepath, s3_key)
     df = spark_read_s3(s3_key) \
+        .limit(total_student) \
         .withColumnRenamed("name", "address") \
         .withColumn("student_id", row_number().over(Window.orderBy(lit(1)))) \
         .withColumn("name", fake_name()) \
