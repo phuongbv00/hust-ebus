@@ -66,7 +66,7 @@ export default function Map() {
     const [showBuses, setShowBuses] = useState(true)
     const [showHighlightPoint, setShowHighlightPoint] = useState(true)
     const { setMapData, mapCenter, highlightPoint } = useContext(MapContext);
-    const pollInterval = 10_000;
+    const pollInterval = 5_000;
     const fetchData = async () => {
         const BASE_URL = "http://localhost:8002"
         try {
