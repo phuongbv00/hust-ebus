@@ -12,7 +12,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import {
     Pagination,
     PaginationContent,
@@ -25,7 +25,7 @@ import {
 
 
 export default function SearchItemComponent() {
-    const { mapData, setMapCenter, setHighlightPoint } = useContext(MapContext);
+    const {mapData, setMapCenter, setHighlightPoint} = useContext(MapContext);
 
     const [type, setType] = useState<"bus" | "bus stop" | "student">("student");
     const [searchId, setSearchId] = useState("");
@@ -49,7 +49,7 @@ export default function SearchItemComponent() {
     // Tính dãy trang cần hiển thị
     const renderPages = () => {
         if (totalPages <= 5) {
-            return Array.from({ length: totalPages }, (_, i) => i + 1);
+            return Array.from({length: totalPages}, (_, i) => i + 1);
         }
         // >5: 1,2,3,..., last-2,last-1,last
         return [
@@ -67,7 +67,7 @@ export default function SearchItemComponent() {
         const dataset =
             type === "student" ? mapData?.assignments :
                 type === "bus stop" ? mapData?.busStops :
-                    mapData?.buses;
+                    mapData?.busAssignments;
 
 
         const found = dataset.find((i) => {
@@ -86,9 +86,12 @@ export default function SearchItemComponent() {
     };
 
 
-    const handleMoveToPoint = (point: { latitude: number; longitude: number }) => {
+    const handleMoveToPoint = (point: any) => {
+        if(type === "bus" && mapData && mapData.buses) {
+            point = mapData.buses.find(i => i.bus_id === point.bus_id);
+        }
         if (setMapCenter) {
-            setMapCenter({ lat: point.latitude, lng: point.longitude });
+            setMapCenter({lat: point.latitude, lng: point.longitude});
         }
         if (setHighlightPoint) {
             setHighlightPoint(point); // <--- thêm dòng này để truyền cho map biết
@@ -127,7 +130,7 @@ export default function SearchItemComponent() {
                                     setSearchId('');
                                 }}
                             />
-                            <span>{opt}</span>
+                            <span>{opt === 'student' ? 'Sinh viên' : opt === 'bus stop' ? "Điểm dừng" : "Xe bus"}</span>
                         </label>
                     ))}
                 </div>
@@ -141,8 +144,8 @@ export default function SearchItemComponent() {
                     onChange={(e) => setSearchId(e.target.value)}
                 />
             </div>
-            <Button onClick={handleSearch}>Tìm kiếm</Button>
-            <Button onClick={handleReassign}>Tái phân bổ</Button>
+            <Button className="cursor-pointer" onClick={handleSearch}>Tìm kiếm</Button>
+            <Button className="cursor-pointer" onClick={handleReassign}>Tái phân bổ</Button>
             <Dialog open={openDialog} onOpenChange={setOpenDialog}>
                 <DialogTrigger asChild>
                     <Button variant="outline">Xem danh sách các đối tượng</Button>
@@ -182,21 +185,24 @@ export default function SearchItemComponent() {
                         <Pagination>
                             <PaginationContent>
                                 <PaginationItem>
-                                    <PaginationPrevious onClick={() => setPage((p) => Math.max(1, p - 1))} />
+                                    <PaginationPrevious onClick={() => setPage((p) => Math.max(1, p - 1))}/>
                                 </PaginationItem>
                                 {pagesToShow.map((p, idx) => (
                                     p === -1 ? (
-                                        <PaginationItem key={`ellipsis-${idx}`}><PaginationEllipsis /></PaginationItem>
+                                        <PaginationItem key={`ellipsis-${idx}`}><PaginationEllipsis/></PaginationItem>
                                     ) : (
                                         <PaginationItem key={p}>
-                                            <PaginationLink href="#" isActive={p === page} onClick={(e) => { e.preventDefault(); setPage(p); }}>
+                                            <PaginationLink href="#" isActive={p === page} onClick={(e) => {
+                                                e.preventDefault();
+                                                setPage(p);
+                                            }}>
                                                 {p}
                                             </PaginationLink>
                                         </PaginationItem>
                                     )
                                 ))}
                                 <PaginationItem>
-                                    <PaginationNext onClick={() => setPage((p) => Math.min(totalPages, p + 1))} />
+                                    <PaginationNext onClick={() => setPage((p) => Math.min(totalPages, p + 1))}/>
                                 </PaginationItem>
                             </PaginationContent>
                         </Pagination>
@@ -207,10 +213,26 @@ export default function SearchItemComponent() {
 
             {result && (
                 <Card className="p-4 border bg-gray-50">
-                    <CardTitle>{type} id: {result.stop_id || result.student_id || result.bus_id}</CardTitle>
-                    {type === 'student' && <span><strong>Tên: </strong>{result.name}</span>}
-                    <span><strong>Vĩ độ (Lat):</strong></span><p> {result.latitude}</p>
-                    <span><strong>Kinh độ (Lng):</strong></span><p> {result.longitude}</p>
+                    <CardTitle>Kết quả tìm kiếm:</CardTitle>
+                    {type === 'student' && <>
+                        <span><strong>Mã sinh viên: </strong>{result.student_id}</span>
+                        <span><strong>Tên sinh viên: </strong>{result.name}</span>
+                        <span><strong>Mã điểm dừng gần nhất: </strong>{result.stop_id}</span>
+                    </>}
+                    {type === 'bus stop' && <>
+                        <span><strong>Mã điểm dừng: </strong>{result.stop_id}</span>
+                        <span><strong>Vĩ độ (Lat):</strong></span><p> {result.latitude}</p>
+                        <span><strong>Kinh độ (Lng):</strong></span><p> {result.longitude}</p>
+                    </>}
+                    {type === 'bus' && <>
+                        <span><strong>Mã xe bus: </strong>{result.bus_id}</span>
+                        {result.stop_id && <>
+                            <span><strong>Mã điểm dừng: </strong>{result.stop_id}</span>
+                            <span><strong>Khoảng cách xe đến điểm dừng: </strong>{Math.ceil(result.distance)} km</span>
+                            <span><strong>Số sinh viên trên xe: </strong>{result.num_students}</span>
+                        </>
+                        }
+                    </>}
                     <Button
                         className="mt-2 cursor-pointer"
                         onClick={() => handleMoveToPoint(result)}
