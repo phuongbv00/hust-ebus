@@ -23,6 +23,13 @@ type Assignment = Point & {
     name: string
 }
 
+type BusAssignment = {
+    stop_id: number
+    bus_id: number
+    distance: number
+    num_students: number
+}
+
 type StudentCluster = Point & {
     cluster_id: number
 }
@@ -44,6 +51,7 @@ function SetViewOnClick({coords}: { coords: { lat: number; lng: number } }) {
 
 export default function Map() {
     const [assignments, setAssignments] = useState<Assignment[]>([])
+    const [busAssignments, setBusAssignments] = useState<BusAssignment[]>([])
     const [busStops, setBusStops] = useState<BusStop[]>([])
     const [roadsGeoJSON, setRoadsGeoJSON] = useState<any>([])
     const [studentClusters, setStudentClusters] = useState<StudentCluster[]>([])
@@ -65,19 +73,22 @@ export default function Map() {
             const rs = await Promise.all([
                 fetch(BASE_URL + "/assignments").then(res => res.json()),
                 fetch(BASE_URL + "/bus-stops").then(res => res.json()),
-                // fetch(BASE_URL + "/roads/hanoi").then(res => res.json()),
+                fetch(BASE_URL + "/roads/hanoi").then(res => res.json()),
                 fetch(BASE_URL + "/student-clusters").then(res => res.json()),
                 fetch(BASE_URL + "/buses").then(res => res.json()),
+                fetch(BASE_URL + "/bus-assignments").then(res => res.json()),
             ])
             setAssignments(rs[0])
             setBusStops(rs[1])
-            // setRoadsGeoJSON(rs[2])
-            setStudentClusters(rs[2])
-            setBuses(rs[3])
+            setRoadsGeoJSON(rs[2])
+            setStudentClusters(rs[3])
+            setBuses(rs[4])
+            setBusAssignments(rs[5])
             const mapData = {
                 assignments: rs[0],
                 busStops: rs[1],
-                buses: rs[3],
+                buses: rs[4],
+                busAssignments: rs[5],
             }
             setMapData(mapData)
             setError(null)

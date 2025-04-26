@@ -147,6 +147,23 @@ def get_student_clusters():
                 for b in clusters
             ]
 
+
+@app.get("/bus-assignments")
+def get_bus_assignments():
+    with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT bus_id,stop_id,distance,num_students FROM bus_assignments")
+            bus_assignments = cur.fetchall()
+            return [
+                {
+                    "bus_id": b[0],
+                    "stop_id": b[1],
+                    "distance": b[2],
+                    "num_students": b[3],
+                }
+                for b in bus_assignments
+            ]
+
 @app.post("/reassign-student-locations")
 def reassign_student_locations():
     """
@@ -174,7 +191,7 @@ def reassign_student_locations():
             return {"message": "Không có sinh viên nào để cập nhật", "students": []}
 
         # 2) Lấy ngẫu nhiên N điểm (có thể lặp lại nếu points < n)
-        chosen = random.choices(points, k=n)
+        chosen = random.choices(points, k=1000)
 
         # 3) Cập nhật từng sinh viên
         with psycopg.connect(DATABASE_URL) as conn:
