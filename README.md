@@ -112,6 +112,10 @@ MUST run before stream worker.
 python test/bootstrap.py
 ```
 
+```shell
+python test/bootstrap.py --student-count 500 --bus-count=50
+```
+
 #### Run Stream Worker
 
 ```shell
@@ -143,6 +147,10 @@ Access to http://localhost:3000
 
 ```shell
 python test/uc01.py
+```
+
+```shell
+python test/uc01.py --student-count 1000 --walk-max-distance 1000 --coverage-ratio 0.9
 ```
 
 #### Evaluate UC02

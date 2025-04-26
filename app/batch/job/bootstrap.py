@@ -1,5 +1,3 @@
-import csv
-import os
 import random
 
 import geopandas as gpd
@@ -12,7 +10,7 @@ from pyspark.sql.types import FloatType, StringType, IntegerType
 from shapely.geometry import LineString, MultiLineString
 
 from batch.core import Job
-from deps.biz import get_rand_students, DATABASE_URL
+from deps.biz import DATABASE_URL
 from deps.s3 import s3_upload
 from deps.spark import spark_read_s3, spark_write_db, get_spark_session
 
@@ -123,7 +121,7 @@ def _drop_all_tables():
         conn.commit()
 
 
-def _seed_students(total_student: int = 1000):
+def _seed_students(total_student: int):
     spark = get_spark_session()  # must declare to make udf works
 
     @udf(returnType=StringType())
@@ -197,30 +195,7 @@ def _seed_roads():
     spark_write_db("road_points", points_sdf)
 
 
-def _export_students_to_csv(limit: int = 150):
-    filename = os.path.join("..", "..", f"test/data/students_{limit}.csv")
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
-
-    # Call get_rand_students to get random records
-    students = get_rand_students(limit)
-
-    # Open .csv data to write
-    with open(filename, mode='w', newline='', encoding='utf-8') as file:
-        writer = csv.writer(file)
-
-        writer.writerow(['student_id', 'longitude', 'latitude', 'name', 'address'])
-
-        for student in students:
-            writer.writerow([
-                student.student_id,
-                student.longitude,
-                student.latitude,
-                student.name,
-                student.address
-            ])
-
-
-def _seed_buses(total_bus: int = 20):
+def _seed_buses(total_bus: int):
     # chọn ngẫu nhiên số chỗ ngồi phổ biến
     @udf(returnType=IntegerType())
     def rand_bus_capacity():
@@ -246,11 +221,10 @@ def _seed_buses(total_bus: int = 20):
 
 class BootstrapJob(Job):
     def run(self, *args, **kwargs):
+        student_count = kwargs["student_count"] if "student_count" in kwargs else 1000
+        bus_count = kwargs["bus_count"] if "bus_count" in kwargs else 300
         _drop_all_tables()
         _create_all_tables()
-        _seed_students()
         _seed_roads()
-        _seed_buses(300)
-        _export_students_to_csv(50)
-        _export_students_to_csv(100)
-        _export_students_to_csv(150)
+        _seed_students(student_count)
+        _seed_buses(bus_count)
