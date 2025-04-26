@@ -5,4 +5,4 @@ from utils import test_job
 load_dotenv()
 
 if __name__ == '__main__':
-    test_job("uc01", student_count=50)
+    test_job("uc01")

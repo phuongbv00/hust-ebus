@@ -102,17 +102,20 @@ uv sync
 python app/batch/main.py
 ```
 
+#### Run Bootstrap Job
+
+Bootstrap job setup database, initial data, topics, ...
+
+MUST run before stream worker.
+
+```shell
+python test/bootstrap.py
+```
+
 #### Run Stream Worker
 
 ```shell
 python app/stream/main.py
-```
-
-#### Run Bootstrap Job
-Bootstrap job setup database and initial data.
-
-```shell
-python test/bootstrap.py
 ```
 
 #### Run Serving Service
@@ -137,16 +140,19 @@ Access to http://localhost:3000
 ### Evaluation
 
 #### Evaluate UC01
+
 ```shell
 python test/uc01.py
 ```
 
 #### Evaluate UC02
+
 ```shell
 python test/uc02.py
 ```
 
 #### Evaluate UC03
+
 ```shell
 python test/uc03.py
 ```
