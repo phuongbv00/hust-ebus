@@ -32,6 +32,18 @@ docker compose -f docker-compose.s3.yaml up -d
 docker compose -f docker-compose.spark.yaml up -d --scale spark-worker=3
 ```
 
+### Kafka
+
+```shell
+docker compose -f docker-compose.kafka.yaml up -d
+```
+
+### Debezium
+
+```shell
+docker compose -f docker-compose.debezium.yaml up -d
+```
+
 ## Development
 
 ### Virtual Environment
@@ -84,27 +96,23 @@ uv sync
       $env:PYTHONPATH="app;test"
       ```
 
-#### Run Batch Service
-
-- Option 1: PyCharm
-    - Right-click on `app/batch/main.py` → Run 'main'
-- Option 2: Terminal
-    ```shell
-    python app/batch/main.py
-    ```
-
-#### Run Bootstrap Job
-
-Bootstrap Job is a batch job which seeds database.
+#### Run Batch Worker
 
 ```shell
-curl http://localhost:8000/job/bootstrap
+python app/batch/main.py
 ```
 
-Check job progress
+#### Run Stream Worker
 
 ```shell
-curl http://localhost:8000/job/bootstrap/executions
+python app/stream/main.py
+```
+
+#### Run Bootstrap Job
+Bootstrap job setup database and initial data.
+
+```shell
+python test/bootstrap.py
 ```
 
 #### Run Serving Service
@@ -125,3 +133,20 @@ npm run dev
 ```
 
 Access to http://localhost:3000
+
+### Evaluation
+
+#### Evaluate UC01
+```shell
+python test/uc01.py
+```
+
+#### Evaluate UC02
+```shell
+python test/uc02.py
+```
+
+#### Evaluate UC03
+```shell
+python test/uc03.py
+```
