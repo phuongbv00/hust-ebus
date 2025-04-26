@@ -40,8 +40,8 @@ const Layout = ({children}: LayoutProps) => {
 
                             <Tabs defaultValue="search"  className="w-full">
                                 <TabsList className="grid w-full grid-cols-2">
-                                    <TabsTrigger value="search">Tìm kiếm</TabsTrigger>
-                                    <TabsTrigger value="job">Job</TabsTrigger>
+                                    <TabsTrigger value="search">Truy vấn</TabsTrigger>
+                                    <TabsTrigger value="job">Thực thi</TabsTrigger>
                                 </TabsList>
 
                                 <div className="flex-1">

@@ -275,7 +275,7 @@ export default function Map() {
                 ) : ''}
 
                 {/* Bus layer with circles */}
-                {showBusStops ? (
+                {showBuses ? (
                     <LayerGroup>
                         {buses.map((point) => (
                             <div key={point.bus_id}>

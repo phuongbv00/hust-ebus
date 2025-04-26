@@ -145,7 +145,7 @@ export default function SearchItemComponent() {
                 />
             </div>
             <Button className="cursor-pointer" onClick={handleSearch}>Tìm kiếm</Button>
-            <Button className="cursor-pointer" onClick={handleReassign}>Tái phân bổ</Button>
+            {/*<Button className="cursor-pointer" onClick={handleReassign}>Tái phân bổ</Button>*/}
             <Dialog open={openDialog} onOpenChange={setOpenDialog}>
                 <DialogTrigger asChild>
                     <Button variant="outline">Xem danh sách các đối tượng</Button>
