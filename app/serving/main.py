@@ -74,6 +74,23 @@ def get_bus_stops():
                 for b in bus_stops
             ]
 
+@app.get("/students")
+def get_bus_stops():
+    with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT student_id,address,longitude,latitude,name FROM students")
+            bus_stops = cur.fetchall()
+            return [
+                {
+                    "student_id": b[0],
+                    "address": b[1],
+                    "longitude": b[2],
+                    "latitude": b[3],
+                    "name": b[4]
+                }
+                for b in bus_stops
+            ]
+
 @app.get("/buses")
 def get_bus_stops():
     with psycopg.connect(DATABASE_URL) as conn:

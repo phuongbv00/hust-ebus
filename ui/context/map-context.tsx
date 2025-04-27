@@ -6,7 +6,8 @@ export const MapContext = createContext({
         assignments: [],
         busStops: [],
         buses: [],
-        busAssignments: []
+        busAssignments: [],
+        student: []
     },
     setMapData: (data: any) => {},
     mapCenter: null,

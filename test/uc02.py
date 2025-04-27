@@ -5,6 +5,12 @@ import time
 import psycopg
 from dotenv import load_dotenv
 
+"""
+Testcase:
+- giả lập sinh viên thay đổi địa chỉ của mình
+- hệ thống tiến hành ghi lại các thay đổi của sinh viên trong db và tiến thành cập nhật phân cụm lại điểm đón.
+"""
+
 load_dotenv()
 
 DATABASE_URL = f"postgresql://{os.getenv('DB_USER')}:{os.getenv('DB_PASS')}@localhost:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
@@ -12,7 +18,7 @@ DATABASE_URL = f"postgresql://{os.getenv('DB_USER')}:{os.getenv('DB_PASS')}@loca
 
 def random_offset():
     """Tạo một offset nhỏ trong khoảng ±0.0001 độ (~11m)"""
-    return random.uniform(-0.0001, 0.0001)
+    return random.uniform(-0.0005, 0.0005)
 
 
 def update_students_location_with_jitter():
