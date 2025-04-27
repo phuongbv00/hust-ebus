@@ -1,7 +1,19 @@
 // MapContext.tsx
 import React, { createContext, useState } from "react";
 
-export const MapContext = createContext({
+export const MapContext = createContext<{
+    mapData: {
+        assignments: any,
+        busStops: any,
+        buses: any,
+        busAssignments: any,
+    },
+    setMapData: (mapData: any) => void,
+    mapCenter: any
+    setMapCenter: (coords: any) => void,
+    highlightPoints: any,
+    setHighlightPoints: (point: any) => void,
+}>({
     mapData: {
         assignments: [],
         busStops: [],
