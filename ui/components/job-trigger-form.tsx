@@ -70,7 +70,7 @@ export default function JobFilterForm({className}: { className?: string }) {
                 setExecutions(data)
 
                 // Example: Stop polling when the status is completed or failed
-                if (!data.map(i => i.status).some(i => i === 0)) {
+                if (!data.map((i: { status: number }) => i.status).some((i: number) => i === 0)) {
                     if (pollingRef.current) clearInterval(pollingRef.current)
                     pollingRef.current = null
                 }
@@ -114,7 +114,7 @@ export default function JobFilterForm({className}: { className?: string }) {
                 setUc03Executions(data)
 
                 // Example: Stop polling when the status is completed or failed
-                if (!data.map(i => i.status).some(i => i === 0)) {
+                if (!data.map((i: { status: number }) => i.status).some((i: number) => i === 0)) {
                     if (uc03PollingRef.current) clearInterval(uc03PollingRef.current)
                     uc03PollingRef.current = null
                 }

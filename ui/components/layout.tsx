@@ -1,13 +1,11 @@
-import {DragEvent, ReactNode, useRef, useState} from "react";
-import {Menu, Trash2, X} from "lucide-react";
+import {ReactNode, useState} from "react";
+import {Menu, X} from "lucide-react";
 import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
 import JobTriggerForm from "@/components/job-trigger-form";
-import {Card} from "@/components/ui/card";
-import {MapContext, MapProvider, Point} from "@/context/map-context";
+import {MapProvider} from "@/context/map-context";
 import SearchItemComponent from "@/components/search-item-component";
 
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 
 interface LayoutProps {
     children: ReactNode;
@@ -38,7 +36,7 @@ const Layout = ({children}: LayoutProps) => {
 
                             <h2 className="text-xl font-bold mb-6">Hệ thống gợi ý<br/>điểm đón trả xe bus</h2>
 
-                            <Tabs defaultValue="search"  className="w-full">
+                            <Tabs defaultValue="search" className="w-full">
                                 <TabsList className="grid w-full grid-cols-2">
                                     <TabsTrigger value="search">Truy vấn</TabsTrigger>
                                     <TabsTrigger value="job">Thực thi</TabsTrigger>
@@ -46,10 +44,10 @@ const Layout = ({children}: LayoutProps) => {
 
                                 <div className="flex-1">
                                     <TabsContent value="search">
-                                        <SearchItemComponent />
+                                        <SearchItemComponent/>
                                     </TabsContent>
                                     <TabsContent value="job">
-                                        <JobTriggerForm />
+                                        <JobTriggerForm/>
                                     </TabsContent>
                                 </div>
                             </Tabs>

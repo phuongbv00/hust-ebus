@@ -60,7 +60,7 @@ export default function Map() {
     const [showBusStops, setShowBusStops] = useState(true)
     const [showBuses, setShowBuses] = useState(true)
     const [showHighlightPoint, setShowHighlightPoint] = useState(true)
-    const { setMapData, mapCenter, highlightPoint } = useContext(MapContext);
+    const {setMapData, mapCenter, highlightPoint} = useContext(MapContext);
     const pollInterval = 3_000;
     const fetchData = async () => {
         const BASE_URL = "http://localhost:8002"
@@ -128,7 +128,7 @@ export default function Map() {
                     <Checkbox id="chk-1"
                               className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                               checked={showAssignments}
-                              onCheckedChange={setShowAssignments}/>
+                              onCheckedChange={e => setShowAssignments(!!e)}/>
                     <label
                         htmlFor="chk-1"
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -140,7 +140,7 @@ export default function Map() {
                     <Checkbox id="chk-2"
                               className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
                               checked={showStudentClusters}
-                              onCheckedChange={setShowStudentClusters}/>
+                              onCheckedChange={e => setShowStudentClusters(!!e)}/>
                     <label
                         htmlFor="chk-2"
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -152,7 +152,7 @@ export default function Map() {
                     <Checkbox id="chk-3"
                               className="data-[state=checked]:bg-destructive data-[state=checked]:border-destructive"
                               checked={showBusStops}
-                              onCheckedChange={setShowBusStops}/>
+                              onCheckedChange={e => setShowBusStops(!!e)}/>
                     <label
                         htmlFor="chk-3"
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -164,7 +164,7 @@ export default function Map() {
                     <Checkbox id="chk-4"
                               className="data-[state=checked]:bg-yellow-300 data-[state=checked]:border-yellow-300"
                               checked={showBuses}
-                              onCheckedChange={setShowBuses}/>
+                              onCheckedChange={e => setShowBuses(!!e)}/>
                     <label
                         htmlFor="chk-4"
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -176,7 +176,7 @@ export default function Map() {
                     <Checkbox id="chk-5"
                               className="data-[state=checked]:bg-violet-700 data-[state=checked]:border-violet-700"
                               checked={showHighlightPoint}
-                              onCheckedChange={setShowHighlightPoint}/>
+                              onCheckedChange={e => setShowHighlightPoint(!!e)}/>
                     <label
                         htmlFor="chk-5"
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -290,12 +290,12 @@ export default function Map() {
                 {/* Set view to active point if selected */}
                 {activePoint && <SetViewOnClick
                     coords={{lat: activePoint.latitude, lng: activePoint.longitude}}/>}
-                {mapCenter && <SetViewOnClick coords={mapCenter} />}
+                {mapCenter && <SetViewOnClick coords={mapCenter}/>}
                 {showHighlightPoint && highlightPoint && (
                     <CircleMarker
                         center={[highlightPoint.latitude, highlightPoint.longitude]}
                         radius={10}
-                        pathOptions={{ color: "#7F00FF", fillColor: "#7F00FF", fillOpacity: 1 }}
+                        pathOptions={{color: "#7F00FF", fillColor: "#7F00FF", fillOpacity: 1}}
                     >
                         <Popup>Đã chọn: {highlightPoint.name || highlightPoint.stop_id || highlightPoint.bus_id}</Popup>
                     </CircleMarker>

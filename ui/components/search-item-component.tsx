@@ -88,8 +88,8 @@ export default function SearchItemComponent() {
 
 
     const handleMoveToPoint = (point: any) => {
-        if(type === "bus" && mapData && mapData.buses) {
-            point = mapData.buses.find(i => i.bus_id === point.bus_id);
+        if (type === "bus" && mapData && mapData.buses) {
+            point = mapData.buses.find((i: any) => i.bus_id === point.bus_id);
         }
         if (setMapCenter) {
             setMapCenter({lat: point.latitude, lng: point.longitude});
