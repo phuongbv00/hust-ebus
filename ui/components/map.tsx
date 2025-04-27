@@ -23,25 +23,16 @@ type Assignment = Point & {
     name: string
 }
 
-type Student = Point & {
-    student_id: number
-    name: string
-}
-
-type BusAssignment = {
+type BusAssignment = Point & {
     stop_id: number
     bus_id: number
     distance: number
     num_students: number
+    capacity: number
 }
 
 type StudentCluster = Point & {
     cluster_id: number
-}
-
-type Buses = Point & {
-    bus_id: number
-    capacity: number
 }
 
 // Map center to specified location
@@ -57,17 +48,14 @@ function SetViewOnClick({coords}: { coords: { lat: number; lng: number } }) {
 export default function Map() {
     const [assignments, setAssignments] = useState<Assignment[]>([])
     const [busAssignments, setBusAssignments] = useState<BusAssignment[]>([])
-    const [student, setStudents] = useState<BusAssignment[]>([])
     const [busStops, setBusStops] = useState<BusStop[]>([])
     const [roadsGeoJSON, setRoadsGeoJSON] = useState<any>([])
     const [studentClusters, setStudentClusters] = useState<StudentCluster[]>([])
-    const [buses, setBuses] = useState<Buses[]>([])
     const [activePoint, setActivePoint] = useState<Point | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const mapRef = useRef(null)
     const [showAssignments, setShowAssignments] = useState(true)
-    const [showStudent, setShowStudent] = useState(true)
     const [showStudentClusters, setShowStudentClusters] = useState(true)
     const [showBusStops, setShowBusStops] = useState(true)
     const [showBuses, setShowBuses] = useState(true)
@@ -82,23 +70,17 @@ export default function Map() {
                 fetch(BASE_URL + "/bus-stops").then(res => res.json()),
                 fetch(BASE_URL + "/roads/hanoi").then(res => res.json()),
                 fetch(BASE_URL + "/student-clusters").then(res => res.json()),
-                fetch(BASE_URL + "/buses").then(res => res.json()),
                 fetch(BASE_URL + "/bus-assignments").then(res => res.json()),
-                fetch(BASE_URL + "/students").then(res => res.json()),
             ])
             setAssignments(rs[0])
             setBusStops(rs[1])
             setRoadsGeoJSON(rs[2])
             setStudentClusters(rs[3])
-            setBuses(rs[4])
-            setBusAssignments(rs[5])
-            setStudents(rs[6])
+            setBusAssignments(rs[4])
             const mapData = {
                 assignments: rs[0],
                 busStops: rs[1],
-                buses: rs[4],
-                busAssignments: rs[5],
-                student: rs[6]
+                busAssignments: rs[4],
             }
             setMapData(mapData)
             setError(null)
@@ -145,13 +127,13 @@ export default function Map() {
                 <div className="flex items-center space-x-2">
                     <Checkbox id="chk-1"
                               className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-                              checked={showStudent}
-                              onCheckedChange={setShowStudent}/>
+                              checked={showAssignments}
+                              onCheckedChange={setShowAssignments}/>
                     <label
                         htmlFor="chk-1"
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     >
-                        Student ({student.length})
+                        Student ({assignments.length})
                     </label>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -187,7 +169,7 @@ export default function Map() {
                         htmlFor="chk-4"
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     >
-                        Bus ({buses.length})
+                        Bus ({busAssignments.length})
                     </label>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -223,9 +205,9 @@ export default function Map() {
                 )}
 
                 {/* Student addresses layer */}
-                {showStudent ? (
+                {showAssignments ? (
                     <LayerGroup>
-                        {student.map((point) => (
+                        {assignments.map((point) => (
                             <CircleMarker
                                 key={point.student_id}
                                 center={[point.latitude, point.longitude]}
@@ -287,7 +269,7 @@ export default function Map() {
                 {/* Bus layer with circles */}
                 {showBuses ? (
                     <LayerGroup>
-                        {buses.map((point) => (
+                        {busAssignments.map((point) => (
                             <div key={point.bus_id}>
                                 {/* Small circle marker - rendered on top */}
                                 <CircleMarker

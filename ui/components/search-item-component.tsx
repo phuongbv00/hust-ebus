@@ -1,6 +1,6 @@
 // SearchItemComponent.tsx
 import {useContext, useState} from "react";
-import {Card, CardContent, CardTitle} from "@/components/ui/card";
+import {Card, CardTitle} from "@/components/ui/card";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {MapContext} from "@/context/map-context";
@@ -23,7 +23,6 @@ import {
     PaginationPrevious,
 } from "@/components/ui/pagination"
 
-
 export default function SearchItemComponent() {
     const {mapData, setMapCenter, setHighlightPoint} = useContext(MapContext);
 
@@ -35,14 +34,14 @@ export default function SearchItemComponent() {
     const [page, setPage] = useState(1);
     const itemsPerPage = 10;
 
-    const studentData = mapData?.assignments.length === 0 ? mapData?.student : mapData?.assignments;
+    const studentData = mapData?.assignments;
 
     const dataset =
         type === "student"
             ? studentData || []
             : type === "bus stop"
                 ? mapData?.busStops || []
-                : mapData?.buses || [];
+                : mapData?.busAssignments || [];
 
 
     const paginated = dataset.slice((page - 1) * itemsPerPage, page * itemsPerPage);
@@ -72,7 +71,7 @@ export default function SearchItemComponent() {
                     mapData?.busAssignments;
 
 
-        const found = dataset.find((i) => {
+        const found = dataset.find((i: any) => {
             return type === "student" ? i?.student_id.toString() === searchId.trim() :
                 type === "bus stop" ? i?.stop_id.toString() === searchId.trim() :
                     i?.bus_id.toString() === searchId.trim()
@@ -99,19 +98,6 @@ export default function SearchItemComponent() {
             setHighlightPoint(point); // <--- thêm dòng này để truyền cho map biết
         }
     };
-
-    const handleReassign = async () => {
-        const BASE_URL = "http://localhost:8002"
-        try {
-            const rs = await fetch(BASE_URL + "/reassign-student-locations", {
-                method: "POST",
-            }).then(res => res.json());
-            console.log(rs)
-
-        } catch (error) {
-            console.error("Error loading points data:", error)
-        }
-    }
 
     return (
         <Card className="p-4 gap-2">
@@ -159,16 +145,24 @@ export default function SearchItemComponent() {
                             <TableRow>
                                 <TableHead>ID</TableHead>
                                 {type === "student" && <TableHead>Tên</TableHead>}
+                                {type === "bus" && <TableHead>Stop ID</TableHead>}
+                                {type === "bus" && <TableHead>Khoảng cách(m)</TableHead>}
+                                {type === "bus" && <TableHead>Số chỗ</TableHead>}
+                                {type === "bus" && <TableHead>Số sinh viên</TableHead>}
                                 <TableHead>Latitude</TableHead>
                                 <TableHead>Longitude</TableHead>
                                 <TableHead>Hành động</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {paginated.map((item, idx) => (
+                            {paginated.map((item: any, idx: number) => (
                                 <TableRow key={idx}>
                                     <TableCell>{item.stop_id || item.student_id || item.bus_id}</TableCell>
                                     {type === "student" && <TableCell>{item.name}</TableCell>}
+                                    {type === "bus" && <TableCell>{item.stop_id}</TableCell>}
+                                    {type === "bus" && <TableCell>{Math.ceil(item.distance || 0)}</TableCell>}
+                                    {type === "bus" && <TableCell>{item.capacity}</TableCell>}
+                                    {type === "bus" && <TableCell>{item.num_students}</TableCell>}
                                     <TableCell>{item.latitude}</TableCell>
                                     <TableCell>{item.longitude}</TableCell>
                                     <TableCell>

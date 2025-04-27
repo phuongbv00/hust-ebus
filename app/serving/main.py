@@ -41,9 +41,8 @@ def get_assignments():
     with psycopg.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                SELECT a.student_id, a.stop_id, s.name, s.latitude, s.longitude
-                FROM assignments a
-                JOIN students s ON a.student_id = s.student_id
+                SELECT s.student_id, a.stop_id, s.name, s.latitude, s.longitude
+                FROM students s LEFT JOIN assignments a ON s.student_id = a.student_id
             """)
             assignments = cur.fetchall()
             return [
@@ -95,14 +94,17 @@ def get_bus_stops():
 def get_bus_stops():
     with psycopg.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
-            cur.execute("SELECT bus_id, capacity, latitude, longitude FROM buses")
+            cur.execute("SELECT b.bus_id, a.stop_id, b.capacity, b.latitude, b.longitude, a.distance, a.num_students FROM buses b LEFT JOIN bus_assignments a ON b.bus_id = a.bus_id")
             buses = cur.fetchall()
             return [
                 {
                     "bus_id": b[0],
-                    "capacity": b[1],
-                    "latitude": b[2],
-                    "longitude": b[3],
+                    "stop_id": b[1],
+                    "capacity": b[2],
+                    "latitude": b[3],
+                    "longitude": b[4],
+                    "distance": b[5],
+                    "num_students": b[6]
                 }
                 for b in buses
             ]
@@ -169,16 +171,20 @@ def get_student_clusters():
 def get_bus_assignments():
     with psycopg.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
-            cur.execute("SELECT bus_id,stop_id,distance,num_students FROM bus_assignments")
-            bus_assignments = cur.fetchall()
+            cur.execute(
+                "SELECT b.bus_id, a.stop_id, b.capacity, b.latitude, b.longitude, a.distance, a.num_students FROM buses b LEFT JOIN bus_assignments a ON b.bus_id = a.bus_id")
+            buses = cur.fetchall()
             return [
                 {
                     "bus_id": b[0],
                     "stop_id": b[1],
-                    "distance": b[2],
-                    "num_students": b[3],
+                    "capacity": b[2],
+                    "latitude": b[3],
+                    "longitude": b[4],
+                    "distance": b[5],
+                    "num_students": b[6]
                 }
-                for b in bus_assignments
+                for b in buses
             ]
 
 @app.post("/reassign-student-locations")
