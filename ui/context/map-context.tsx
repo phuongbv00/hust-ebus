@@ -11,8 +11,8 @@ export const MapContext = createContext<{
     setMapData: (mapData: any) => void,
     mapCenter: any
     setMapCenter: (coords: any) => void,
-    highlightPoints: any,
-    setHighlightPoints: (point: any) => void,
+    highlightPoint: any,
+    setHighlightPoint: (point: any) => void,
 }>({
     mapData: {
         assignments: [],
