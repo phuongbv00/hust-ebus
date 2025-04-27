@@ -26,8 +26,8 @@ services:
       MODE: serving
     env_file:
       - .env
-  ui:
-    image: ebus-web
-    build: ./ui
-    ports:
-      - "3000:3000"
+#  ui:
+#    image: ebus-web
+#    build: ./ui
+#    ports:
+#      - "3000:3000"
