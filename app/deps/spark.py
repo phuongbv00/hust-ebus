@@ -13,7 +13,7 @@ DB_DRIVER = "org.postgresql.Driver"
 
 def get_spark_session():
     return (SparkSession.builder
-            .remote("sc://localhost")  # TODO
+            .remote(f"sc://{os.getenv("SPARK_CONNECT")}")
             .getOrCreate())
 
 

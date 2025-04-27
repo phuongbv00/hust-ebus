@@ -1,6 +1,6 @@
 services:
   spark-master:
-    image: my-spark:3.5.5
+    image: ebus-spark:3.5.5
     build: ./spark
     environment:
       - SPARK_MODE=master
@@ -13,7 +13,7 @@ services:
       - "8080:8080"
       - "7077:7077"
   spark-worker:
-    image: my-spark:3.5.5
+    image: ebus-spark:3.5.5
     build: ./spark
     environment:
       - SPARK_MODE=worker
@@ -28,7 +28,7 @@ services:
     depends_on:
       - spark-master
   spark-connect:
-    image: my-spark:3.5.5
+    image: ebus-spark:3.5.5
     build: ./spark
     command:
       - "/opt/bitnami/spark/sbin/start-connect-server.sh"

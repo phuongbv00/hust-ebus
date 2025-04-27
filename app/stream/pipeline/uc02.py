@@ -6,7 +6,7 @@ import psycopg
 from confluent_kafka import Consumer
 
 from deps.biz import DATABASE_URL
-from deps.kafka import BOOTSTRAP_SERVERS, basic_consume_loop
+from deps.kafka import BOOTSTRAP_SERVERS, basic_consume_loop, wait_for_topic
 from deps.utils import haversine_distance
 
 
@@ -65,11 +65,13 @@ def msg_process(msg_value):
 
 def run():
     print("UC02: Running...")
+    topic = "pgserver.public.students"
+    if not wait_for_topic(topic):
+        return
     consumer_conf = {
         'bootstrap.servers': BOOTSTRAP_SERVERS,
         'group.id': 'pipeline-uc02-group',
         'auto.offset.reset': 'latest'
     }
     consumer = Consumer(consumer_conf)
-    topics = ['pgserver.public.students']
-    basic_consume_loop(consumer, topics, msg_process)
+    basic_consume_loop(consumer, [topic], msg_process)

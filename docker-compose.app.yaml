@@ -1,0 +1,28 @@
+services:
+  batch-worker:
+    image: ebus-app
+    build: .
+    ports:
+      - "${BATCH_PORT}:8000"
+    environment:
+      MODE: batch
+    env_file:
+      - .env
+  stream-worker:
+    image: ebus-app
+    build: .
+    ports:
+      - "${STREAM_PORT}:8000"
+    environment:
+      MODE: stream
+    env_file:
+      - .env
+  business-service:
+    image: ebus-app
+    build: .
+    ports:
+      - "${SERVING_PORT}:8000"
+    environment:
+      MODE: serving
+    env_file:
+      - .env

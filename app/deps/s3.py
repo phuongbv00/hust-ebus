@@ -25,9 +25,8 @@ def s3_upload(local_path: str, s3_key: str):
     access_key = _get_env_or_raise("S3_ACCESS_KEY")
     secret_key = _get_env_or_raise("S3_SECRET_KEY")
     bucket_name = _get_env_or_raise("S3_BUCKET")
-    # TODO
-    # endpoint = _get_env_or_raise("S3_ENDPOINT")
-    endpoint = "localhost:9000"
+    endpoint = _get_env_or_raise("S3_ENDPOINT")
+    # TODO: endpoint = "localhost:9000"
 
     if not endpoint.startswith("http"):
         endpoint = f"http://{endpoint}"
