@@ -102,20 +102,6 @@ uv sync
 python app/batch/main.py
 ```
 
-#### Run Bootstrap Job
-
-Bootstrap job setup database, initial data, topics, ...
-
-MUST run before stream worker.
-
-```shell
-python test/bootstrap.py
-```
-
-```shell
-python test/bootstrap.py --student-count 500 --bus-count=50
-```
-
 #### Run Stream Worker
 
 ```shell
@@ -140,6 +126,18 @@ npm run dev
 ```
 
 Access to http://localhost:3000
+
+### Run Bootstrap Job
+
+Bootstrap job setup database, initial data, topics, ...
+
+```shell
+python test/bootstrap.py
+```
+
+```shell
+python test/bootstrap.py --student-count 500 --bus-count=50
+```
 
 ### Evaluation
 
