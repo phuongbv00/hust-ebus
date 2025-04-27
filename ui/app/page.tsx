@@ -10,13 +10,10 @@ export default function Home() {
         loading: () => <div className="w-full h-screen flex items-center justify-center">Loading Map...</div>,
     })
 
-    // Set the circle radius as a prop (in meters)
-    const circleRadius = 500
-
     return (
         <Layout>
             <main className="flex min-h-screen flex-col items-center justify-between">
-                <MapWithNoSSR circleRadius={circleRadius} />
+                <MapWithNoSSR />
             </main>
         </Layout>
     )

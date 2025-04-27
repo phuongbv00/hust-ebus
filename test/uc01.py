@@ -13,4 +13,5 @@ parser.add_argument('--coverage-ratio', type=float, help='Coverage ratio')
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    test_job("uc01", **vars(args))
+    filtered_args = {k: v for k, v in vars(args).items() if v is not None}
+    test_job("uc01", **filtered_args)

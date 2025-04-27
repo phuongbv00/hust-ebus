@@ -9,7 +9,9 @@ from deps.models import Student
 
 load_dotenv()
 
-DATABASE_URL = f"postgresql://{os.getenv('DB_USER')}:{os.getenv('DB_PASS')}@localhost:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
+# TODO: DB_HOST = "localhost"
+DB_HOST = os.getenv("DB_HOST")
+DATABASE_URL = f"postgresql://{os.getenv('DB_USER')}:{os.getenv('DB_PASS')}@{DB_HOST}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
 
 
 def get_hanoi_roads_geojson(mode="cropped"):
@@ -52,7 +54,7 @@ def get_students(limit: int | None) -> list[Student]:
             ]
 
 
-def get_all_bus_stops()-> List[Tuple[str, float, float]]:
+def get_all_bus_stops() -> List[Tuple[str, float, float]]:
     with psycopg.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
             cur.execute("SELECT stop_id, latitude, longitude FROM bus_stops")
@@ -70,8 +72,8 @@ def get_all_assignments():
     with psycopg.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                    SELECT student_id, stop_id
-                    FROM assignments
-                """)
+                        SELECT student_id, stop_id
+                        FROM assignments
+                        """)
             rows = cur.fetchall()
     return rows

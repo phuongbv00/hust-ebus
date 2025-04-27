@@ -12,4 +12,5 @@ parser.add_argument('--bus-count', type=int, help='Bus count')
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    test_job("bootstrap", **vars(args))
+    filtered_args = {k: v for k, v in vars(args).items() if v is not None}
+    test_job("bootstrap", **filtered_args)

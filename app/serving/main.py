@@ -94,7 +94,11 @@ def get_bus_stops():
 def get_bus_stops():
     with psycopg.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
-            cur.execute("SELECT b.bus_id, a.stop_id, b.capacity, b.latitude, b.longitude, a.distance, a.num_students FROM buses b LEFT JOIN bus_assignments a ON b.bus_id = a.bus_id")
+            cur.execute("""
+                        SELECT b.bus_id, a.stop_id, b.capacity, b.latitude, b.longitude, a.distance, a.num_students
+                        FROM buses b
+                                 LEFT JOIN bus_assignments a ON b.bus_id = a.bus_id
+                        """)
             buses = cur.fetchall()
             return [
                 {
