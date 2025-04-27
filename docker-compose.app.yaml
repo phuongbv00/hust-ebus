@@ -1,6 +1,6 @@
 services:
   batch-worker:
-    image: ebus-app
+    image: ebus-backend
     build: .
     ports:
       - "${BATCH_PORT}:8000"
@@ -9,7 +9,7 @@ services:
     env_file:
       - .env
   stream-worker:
-    image: ebus-app
+    image: ebus-backend
     build: .
     ports:
       - "${STREAM_PORT}:8000"
@@ -18,7 +18,7 @@ services:
     env_file:
       - .env
   business-service:
-    image: ebus-app
+    image: ebus-backend
     build: .
     ports:
       - "${SERVING_PORT}:8000"
@@ -26,3 +26,8 @@ services:
       MODE: serving
     env_file:
       - .env
+  ui:
+    image: ebus-web
+    build: ./ui
+    ports:
+      - "3000:3000"
