@@ -12,7 +12,7 @@ DATABASE_URL = f"postgresql://{os.getenv('DB_USER')}:{os.getenv('DB_PASS')}@loca
 
 def random_offset():
     """Tạo một offset nhỏ trong khoảng ±0.0001 độ (~11m)"""
-    return random.uniform(-0.0001, 0.0001)
+    return random.uniform(-0.0005, 0.0005)
 
 
 def update_students_location_with_jitter():

@@ -35,9 +35,11 @@ export default function SearchItemComponent() {
     const [page, setPage] = useState(1);
     const itemsPerPage = 10;
 
+    const studentData = mapData?.assignments.length === 0 ? mapData?.student : mapData?.assignments;
+
     const dataset =
         type === "student"
-            ? mapData?.assignments || []
+            ? studentData || []
             : type === "bus stop"
                 ? mapData?.busStops || []
                 : mapData?.buses || [];
@@ -65,7 +67,7 @@ export default function SearchItemComponent() {
     const handleSearch = () => {
         if (!mapData) return;
         const dataset =
-            type === "student" ? mapData?.assignments :
+            type === "student" ? studentData :
                 type === "bus stop" ? mapData?.busStops :
                     mapData?.busAssignments;
 

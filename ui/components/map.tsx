@@ -23,6 +23,11 @@ type Assignment = Point & {
     name: string
 }
 
+type Student = Point & {
+    student_id: number
+    name: string
+}
+
 type BusAssignment = {
     stop_id: number
     bus_id: number
@@ -52,6 +57,7 @@ function SetViewOnClick({coords}: { coords: { lat: number; lng: number } }) {
 export default function Map() {
     const [assignments, setAssignments] = useState<Assignment[]>([])
     const [busAssignments, setBusAssignments] = useState<BusAssignment[]>([])
+    const [student, setStudents] = useState<BusAssignment[]>([])
     const [busStops, setBusStops] = useState<BusStop[]>([])
     const [roadsGeoJSON, setRoadsGeoJSON] = useState<any>([])
     const [studentClusters, setStudentClusters] = useState<StudentCluster[]>([])
@@ -61,12 +67,13 @@ export default function Map() {
     const [error, setError] = useState<string | null>(null)
     const mapRef = useRef(null)
     const [showAssignments, setShowAssignments] = useState(true)
+    const [showStudent, setShowStudent] = useState(true)
     const [showStudentClusters, setShowStudentClusters] = useState(true)
     const [showBusStops, setShowBusStops] = useState(true)
     const [showBuses, setShowBuses] = useState(true)
     const [showHighlightPoint, setShowHighlightPoint] = useState(true)
     const { setMapData, mapCenter, highlightPoint } = useContext(MapContext);
-    const pollInterval = 5_000;
+    const pollInterval = 3_000;
     const fetchData = async () => {
         const BASE_URL = "http://localhost:8002"
         try {
@@ -77,6 +84,7 @@ export default function Map() {
                 fetch(BASE_URL + "/student-clusters").then(res => res.json()),
                 fetch(BASE_URL + "/buses").then(res => res.json()),
                 fetch(BASE_URL + "/bus-assignments").then(res => res.json()),
+                fetch(BASE_URL + "/students").then(res => res.json()),
             ])
             setAssignments(rs[0])
             setBusStops(rs[1])
@@ -84,11 +92,13 @@ export default function Map() {
             setStudentClusters(rs[3])
             setBuses(rs[4])
             setBusAssignments(rs[5])
+            setStudents(rs[6])
             const mapData = {
                 assignments: rs[0],
                 busStops: rs[1],
                 buses: rs[4],
                 busAssignments: rs[5],
+                student: rs[6]
             }
             setMapData(mapData)
             setError(null)
@@ -135,13 +145,13 @@ export default function Map() {
                 <div className="flex items-center space-x-2">
                     <Checkbox id="chk-1"
                               className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-                              checked={showAssignments}
-                              onCheckedChange={setShowAssignments}/>
+                              checked={showStudent}
+                              onCheckedChange={setShowStudent}/>
                     <label
                         htmlFor="chk-1"
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     >
-                        Student ({assignments.length})
+                        Student ({student.length})
                     </label>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -213,9 +223,9 @@ export default function Map() {
                 )}
 
                 {/* Student addresses layer */}
-                {showAssignments ? (
+                {showStudent ? (
                     <LayerGroup>
-                        {assignments.map((point) => (
+                        {student.map((point) => (
                             <CircleMarker
                                 key={point.student_id}
                                 center={[point.latitude, point.longitude]}
